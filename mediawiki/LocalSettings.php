@@ -186,8 +186,8 @@ $wgCirrusSearchServers = [ 'elasticsearch' ];
 $wgSearchType = 'CirrusSearch';
 $wgCirrusSearchExtraIndexSettings['index.mapping.total_fields.limit'] = 5000;
 
-# Scribunto config — use Lua standalone engine
-$wgScribuntoDefaultEngine = 'luastandalone';
+# Scribunto config — use LuaSandbox PHP extension (works on ARM64)
+$wgScribuntoDefaultEngine = 'luasandbox';
 
 # VisualEditor config — enable for custom namespaces
 $wgVisualEditorAvailableNamespaces[NS_AGENT] = true;
