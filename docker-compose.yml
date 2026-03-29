@@ -34,7 +34,7 @@ services:
       - "8080:80"
     volumes:
       - ./mediawiki/LocalSettings.php:/var/www/html/LocalSettings.php
-      - ./mediawiki/skins/citizen:/var/www/html/skins/citizen
+      - ./mediawiki/skins/citizen:/var/www/html/skins/Citizen
       - ./mediawiki/extensions/Cargo:/var/www/html/extensions/Cargo
       - ./mediawiki/extensions/Scribunto:/var/www/html/extensions/Scribunto
       - ./mediawiki/extensions/CirrusSearch:/var/www/html/extensions/CirrusSearch

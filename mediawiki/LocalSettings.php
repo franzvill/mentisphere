@@ -138,7 +138,7 @@ wfLoadSkin( 'Vector' );
 # Add more configuration options below.
 
 # Citizen Skin
-wfLoadSkin( 'citizen' );
+wfLoadSkin( 'Citizen' );
 $wgDefaultSkin = 'citizen';
 
 # Custom Namespaces
@@ -171,6 +171,11 @@ $wgContentNamespaces[] = NS_AGENT;
 $wgContentNamespaces[] = NS_KNOWLEDGE;
 $wgContentNamespaces[] = NS_SKILL;
 
+# Include custom namespaces in default search
+$wgNamespacesToBeSearchedDefault[NS_AGENT] = true;
+$wgNamespacesToBeSearchedDefault[NS_KNOWLEDGE] = true;
+$wgNamespacesToBeSearchedDefault[NS_SKILL] = true;
+
 # Extensions
 wfLoadExtension( 'VisualEditor' );
 wfLoadExtension( 'Echo' );
@@ -178,13 +183,12 @@ wfLoadExtension( 'Thanks' );
 wfLoadExtension( 'AbuseFilter' );
 wfLoadExtension( 'Cargo' );
 wfLoadExtension( 'Scribunto' );
-wfLoadExtension( 'CirrusSearch' );
-wfLoadExtension( 'Elastica' );
-
-# CirrusSearch config
-$wgCirrusSearchServers = [ 'elasticsearch' ];
-$wgSearchType = 'CirrusSearch';
-$wgCirrusSearchExtraIndexSettings['index.mapping.total_fields.limit'] = 5000;
+# CirrusSearch disabled for MVP — needs Composer deps in container
+# Using MediaWiki built-in search instead (works out of the box)
+# wfLoadExtension( 'CirrusSearch' );
+# wfLoadExtension( 'Elastica' );
+# $wgCirrusSearchServers = [ 'elasticsearch' ];
+# $wgSearchType = 'CirrusSearch';
 
 # Scribunto config — use LuaSandbox PHP extension (works on ARM64)
 $wgScribuntoDefaultEngine = 'luasandbox';
