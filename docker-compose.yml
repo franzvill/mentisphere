@@ -1,10 +1,52 @@
-version: '3.8'
-
 services:
-  # Services will be added in subsequent tasks
+  mariadb:
+    image: mariadb:10.11
+    restart: unless-stopped
+    volumes:
+      - mariadb-data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MEDIAWIKI_DB_NAME}
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  elasticsearch:
+    image: elasticsearch:7.17.18
+    restart: unless-stopped
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+    environment:
+      discovery.type: single-node
+      ES_JAVA_OPTS: "-Xms256m -Xmx256m"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:9200/_cluster/health | grep -q '\"status\":\"green\\|yellow\"'"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  mediawiki:
+    image: mediawiki:1.42
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - ./mediawiki/LocalSettings.php:/var/www/html/LocalSettings.php
+      - wiki-images:/var/www/html/images
+    depends_on:
+      mariadb:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+    environment:
+      MEDIAWIKI_DB_HOST: mariadb
+      MEDIAWIKI_DB_NAME: ${MEDIAWIKI_DB_NAME}
+      MEDIAWIKI_DB_USER: root
+      MEDIAWIKI_DB_PASSWORD: ${MYSQL_ROOT_PASSWORD}
 
 volumes:
-  # Volumes will be added in subsequent tasks
-
-networks:
-  # Networks will be added in subsequent tasks
+  mariadb-data:
+  es-data:
+  wiki-images:
