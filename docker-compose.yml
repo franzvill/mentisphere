@@ -69,6 +69,32 @@ services:
       timeout: 5s
       retries: 5
 
+  chat-service:
+    build: ./chat-service
+    restart: unless-stopped
+    volumes:
+      - ./chat-widget/dist:/app/public/assets
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://mentisphere:${PG_PASSWORD}@postgres:5432/mentisphere_chat
+      MEDIAWIKI_API_URL: http://mediawiki:80/api.php
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      CHAT_SERVICE_SECRET: ${CHAT_SERVICE_SECRET}
+
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - mediawiki
+      - chat-service
+
 volumes:
   mariadb-data:
   es-data:
