@@ -35,6 +35,11 @@ services:
     volumes:
       - ./mediawiki/LocalSettings.php:/var/www/html/LocalSettings.php
       - ./mediawiki/skins/citizen:/var/www/html/skins/citizen
+      - ./mediawiki/extensions/Cargo:/var/www/html/extensions/Cargo
+      - ./mediawiki/extensions/Scribunto:/var/www/html/extensions/Scribunto
+      - ./mediawiki/extensions/CirrusSearch:/var/www/html/extensions/CirrusSearch
+      - ./mediawiki/extensions/Elastica:/var/www/html/extensions/Elastica
+      - ./mediawiki/extensions/MentiSphereChat:/var/www/html/extensions/MentiSphereChat
       - wiki-images:/var/www/html/images
     depends_on:
       mariadb:

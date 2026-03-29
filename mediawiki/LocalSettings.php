@@ -170,3 +170,26 @@ $wgNamespacesWithSubpages[NS_ORCHESTRATOR] = true;
 $wgContentNamespaces[] = NS_AGENT;
 $wgContentNamespaces[] = NS_KNOWLEDGE;
 $wgContentNamespaces[] = NS_SKILL;
+
+# Extensions
+wfLoadExtension( 'VisualEditor' );
+wfLoadExtension( 'Echo' );
+wfLoadExtension( 'Thanks' );
+wfLoadExtension( 'AbuseFilter' );
+wfLoadExtension( 'Cargo' );
+wfLoadExtension( 'Scribunto' );
+wfLoadExtension( 'CirrusSearch' );
+wfLoadExtension( 'Elastica' );
+
+# CirrusSearch config
+$wgCirrusSearchServers = [ 'elasticsearch' ];
+$wgSearchType = 'CirrusSearch';
+$wgCirrusSearchExtraIndexSettings['index.mapping.total_fields.limit'] = 5000;
+
+# Scribunto config — use Lua standalone engine
+$wgScribuntoDefaultEngine = 'luastandalone';
+
+# VisualEditor config — enable for custom namespaces
+$wgVisualEditorAvailableNamespaces[NS_AGENT] = true;
+$wgVisualEditorAvailableNamespaces[NS_KNOWLEDGE] = true;
+$wgVisualEditorAvailableNamespaces[NS_SKILL] = true;
