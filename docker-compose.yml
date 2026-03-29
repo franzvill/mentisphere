@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  # Services will be added in subsequent tasks
+
+volumes:
+  # Volumes will be added in subsequent tasks
+
+networks:
+  # Networks will be added in subsequent tasks
