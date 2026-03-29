@@ -141,3 +141,32 @@ wfLoadSkin( 'Vector' );
 wfLoadSkin( 'citizen' );
 $wgDefaultSkin = 'citizen';
 
+# Custom Namespaces
+define( 'NS_AGENT', 3000 );
+define( 'NS_AGENT_TALK', 3001 );
+define( 'NS_KNOWLEDGE', 3010 );
+define( 'NS_KNOWLEDGE_TALK', 3011 );
+define( 'NS_SKILL', 3020 );
+define( 'NS_SKILL_TALK', 3021 );
+define( 'NS_ORCHESTRATOR', 3030 );
+define( 'NS_ORCHESTRATOR_TALK', 3031 );
+
+$wgExtraNamespaces[NS_AGENT] = 'Agent';
+$wgExtraNamespaces[NS_AGENT_TALK] = 'Agent_talk';
+$wgExtraNamespaces[NS_KNOWLEDGE] = 'Knowledge';
+$wgExtraNamespaces[NS_KNOWLEDGE_TALK] = 'Knowledge_talk';
+$wgExtraNamespaces[NS_SKILL] = 'Skill';
+$wgExtraNamespaces[NS_SKILL_TALK] = 'Skill_talk';
+$wgExtraNamespaces[NS_ORCHESTRATOR] = 'Orchestrator';
+$wgExtraNamespaces[NS_ORCHESTRATOR_TALK] = 'Orchestrator_talk';
+
+# Enable subpages in custom namespaces
+$wgNamespacesWithSubpages[NS_AGENT] = true;
+$wgNamespacesWithSubpages[NS_KNOWLEDGE] = true;
+$wgNamespacesWithSubpages[NS_SKILL] = true;
+$wgNamespacesWithSubpages[NS_ORCHESTRATOR] = true;
+
+# Enable content namespaces for search
+$wgContentNamespaces[] = NS_AGENT;
+$wgContentNamespaces[] = NS_KNOWLEDGE;
+$wgContentNamespaces[] = NS_SKILL;
