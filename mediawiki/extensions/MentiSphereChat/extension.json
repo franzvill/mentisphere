@@ -1,0 +1,48 @@
+{
+	"name": "MentiSphereChat",
+	"version": "0.1.0",
+	"author": ["MentiSphere Contributors"],
+	"url": "https://github.com/mentisphere",
+	"descriptionmsg": "mentispherechat-desc",
+	"license-name": "MIT",
+	"type": "other",
+	"requires": {
+		"MediaWiki": ">= 1.42"
+	},
+	"AutoloadClasses": {
+		"MentiSphereChatHooks": "includes/MentiSphereChatHooks.php"
+	},
+	"Hooks": {
+		"SkinTemplateNavigation::Universal": "MentiSphereChatHooks::onSkinTemplateNavigation",
+		"BeforePageDisplay": "MentiSphereChatHooks::onBeforePageDisplay",
+		"PageSaveComplete": "MentiSphereChatHooks::onPageSaveComplete"
+	},
+	"config": {
+		"MentiSphereChatServiceUrl": {
+			"value": "/chat-api",
+			"description": "URL of the MentiSphere chat service API"
+		},
+		"MentiSphereChatAssetsUrl": {
+			"value": "/chat-assets",
+			"description": "URL where chat widget JS/CSS are served"
+		},
+		"MentiSphereChatServiceSecret": {
+			"value": "",
+			"description": "Shared secret for internal chat service API calls"
+		}
+	},
+	"ResourceModules": {
+		"ext.mentisphere.chat": {
+			"scripts": ["modules/ext.mentisphere.chat/chat-loader.js"],
+			"styles": ["modules/ext.mentisphere.chat/chat-loader.css"]
+		}
+	},
+	"ResourceFileModulePaths": {
+		"localBasePath": "",
+		"remoteExtPath": "MentiSphereChat"
+	},
+	"MessagesDirs": {
+		"MentiSphereChat": ["i18n"]
+	},
+	"manifest_version": 2
+}

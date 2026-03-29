@@ -1,0 +1,7 @@
+{
+	"@metadata": {
+		"authors": ["MentiSphere Contributors"]
+	},
+	"mentispherechat-desc": "Embeds the MentiSphere AI chat widget on Agent pages",
+	"mentispherechat-tab": "Chat"
+}

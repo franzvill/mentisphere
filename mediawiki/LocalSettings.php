@@ -193,3 +193,9 @@ $wgScribuntoDefaultEngine = 'luastandalone';
 $wgVisualEditorAvailableNamespaces[NS_AGENT] = true;
 $wgVisualEditorAvailableNamespaces[NS_KNOWLEDGE] = true;
 $wgVisualEditorAvailableNamespaces[NS_SKILL] = true;
+
+# MentiSphere Chat Extension
+wfLoadExtension( 'MentiSphereChat' );
+$wgMentiSphereChatServiceUrl = '/chat-api';
+$wgMentiSphereChatAssetsUrl = '/chat-assets';
+$wgMentiSphereChatServiceSecret = getenv( 'CHAT_SERVICE_SECRET' ) ?: '';
