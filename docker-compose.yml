@@ -28,12 +28,13 @@ services:
       retries: 10
 
   mediawiki:
-    image: mediawiki:1.42
+    image: mediawiki:1.43
     restart: unless-stopped
     ports:
       - "8080:80"
     volumes:
       - ./mediawiki/LocalSettings.php:/var/www/html/LocalSettings.php
+      - ./mediawiki/skins/citizen:/var/www/html/skins/citizen
       - wiki-images:/var/www/html/images
     depends_on:
       mariadb:
