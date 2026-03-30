@@ -17,26 +17,30 @@ class MentiSphereChatHooks {
 	}
 
 	/**
-	 * Trigger embedding sync when Knowledge pages are saved
+	 * Trigger embedding sync when Knowledge or Skill pages are saved
 	 */
 	public static function onPageSaveComplete( $wikiPage, $user, $summary, $flags, $revisionRecord, $editResult ) {
 		$title = $wikiPage->getTitle();
-		if ( $title->getNamespace() !== NS_KNOWLEDGE ) {
+
+		if ( $title->getNamespace() === NS_KNOWLEDGE ) {
+			$type = 'knowledge';
+		} elseif ( $title->getNamespace() === NS_SKILL ) {
+			$type = 'skill';
+		} else {
 			return;
 		}
 
 		$config = MediaWiki\MediaWikiServices::getInstance()->getMainConfig();
-		$chatServiceUrl = $config->get( 'MentiSphereChatServiceUrl' );
 		$secret = $config->get( 'MentiSphereChatServiceSecret' );
 
-		// Fire and forget — don't block the page save
-		$url = $chatServiceUrl . '/embeddings/sync';
-		$data = json_encode( [ 'page_title' => $title->getPrefixedText() ] );
+		// Use internal Docker URL for server-to-server calls
+		$url = 'http://chat-service:3000/api/embeddings/sync';
+		$data = json_encode( [ 'page_title' => $title->getPrefixedText(), 'type' => $type ] );
 
 		$requestFactory = MediaWiki\MediaWikiServices::getInstance()->getHttpRequestFactory();
 		$req = $requestFactory->create( $url, [
 			'method' => 'POST',
-			'timeout' => 5,
+			'timeout' => 10,
 			'postData' => $data,
 		] );
 		$req->setHeader( 'Content-Type', 'application/json' );

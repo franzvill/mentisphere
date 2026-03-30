@@ -11,9 +11,13 @@ export class AnthropicProvider implements LLMProvider {
   async *stream(params: {
     systemPrompt: string;
     messages: LLMMessage[];
+    skillInstructions?: string;
     knowledgeContext?: string;
   }): AsyncIterable<LLMStreamEvent> {
     let system = params.systemPrompt;
+    if (params.skillInstructions) {
+      system += '\n\n---\nSkill Instructions:\n' + params.skillInstructions;
+    }
     if (params.knowledgeContext) {
       system += '\n\n---\nRelevant Knowledge:\n' + params.knowledgeContext;
     }

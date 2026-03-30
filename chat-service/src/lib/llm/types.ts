@@ -13,6 +13,7 @@ export interface LLMProvider {
   stream(params: {
     systemPrompt: string;
     messages: LLMMessage[];
+    skillInstructions?: string;
     knowledgeContext?: string;
   }): AsyncIterable<LLMStreamEvent>;
 }

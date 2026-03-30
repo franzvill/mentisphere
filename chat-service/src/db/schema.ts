@@ -48,6 +48,13 @@ export const knowledgeEmbeddings = pgTable('knowledge_embeddings', {
   unique('uq_embeddings_chunk').on(table.pageTitle, table.pageRevisionId, table.chunkIndex),
 ]);
 
+export const skillRegistry = pgTable('skill_registry', {
+  pageTitle: text('page_title').primaryKey(),
+  name: text('name').notNull(),
+  description: text('description').notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
 export const agentStats = pgTable('agent_stats', {
   agentPageTitle: text('agent_page_title').primaryKey(),
   totalSessions: integer('total_sessions').default(0).notNull(),
