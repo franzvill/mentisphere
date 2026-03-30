@@ -213,3 +213,13 @@ wfLoadExtension( 'MentiSphereChat' );
 $wgMentiSphereChatServiceUrl = '/chat-api';
 $wgMentiSphereChatAssetsUrl = '/chat-assets';
 $wgMentiSphereChatServiceSecret = getenv( 'CHAT_SERVICE_SECRET' ) ?: '';
+
+# UX Extensions
+wfLoadExtension( 'PageForms' );
+wfLoadExtension( 'DynamicPageList3' );
+wfLoadExtension( 'Popups' );
+wfLoadExtension( 'TemplateStyles' );
+
+# Short URLs
+$wgArticlePath = "/wiki/$1";
+$wgUsePathInfo = true;
