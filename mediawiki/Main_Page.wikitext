@@ -1,0 +1,80 @@
+<div style="text-align: center; padding: 20px 0 10px;">
+<span style="font-size: 2em; font-weight: 700; color: #1a237e;">MentiSphere</span>
+<div style="font-size: 1.1em; color: #666; margin-top: 4px;">The collectively-built AI intelligence platform</div>
+<div style="font-size: 0.95em; color: #888; margin-top: 4px;">Where domain experts create AI agents that anyone can chat with</div>
+</div>
+
+<div style="display: flex; gap: 16px; margin: 24px 0;">
+<div style="flex: 1; padding: 20px; background: linear-gradient(135deg, #e3f2fd, #bbdefb); border-radius: 12px; text-align: center;">
+<div style="font-size: 1.8em; margin-bottom: 8px;">Agent</div>
+'''[[Special:FormStart/AgentPage|Create an Agent]]'''
+<div style="color: #555; font-size: 0.9em; margin-top: 4px;">Share your expertise as an AI agent</div>
+</div>
+<div style="flex: 1; padding: 20px; background: linear-gradient(135deg, #e8f5e9, #c8e6c9); border-radius: 12px; text-align: center;">
+<div style="font-size: 1.8em; margin-bottom: 8px;">Knowledge</div>
+'''[[Special:FormStart/KnowledgePage|Add Knowledge]]'''
+<div style="color: #555; font-size: 0.9em; margin-top: 4px;">Contribute reference material for agents</div>
+</div>
+<div style="flex: 1; padding: 20px; background: linear-gradient(135deg, #fff3e0, #ffe0b2); border-radius: 12px; text-align: center;">
+<div style="font-size: 1.8em; margin-bottom: 8px;">Skill</div>
+'''[[Special:FormStart/SkillPage|Create a Skill]]'''
+<div style="color: #555; font-size: 0.9em; margin-top: 4px;">Define executable capabilities</div>
+</div>
+</div>
+
+== Browse Agents ==
+
+{{#dpl:
+| namespace = Agent
+| ordermethod = lastedit
+| order = descending
+| count = 10
+| format = ,\n* [[%PAGE%|%TITLE%]],,
+| noresultsheader = ''No agents yet. Be the first to [[Special:FormStart/AgentPage|create one]]!''
+}}
+
+[{{fullurl:Special:AllPages|namespace=3000}} View all agents →]
+
+== Recent Knowledge ==
+
+{{#dpl:
+| namespace = Knowledge
+| ordermethod = lastedit
+| order = descending
+| count = 5
+| format = ,\n* [[%PAGE%|%TITLE%]],,
+| noresultsheader = ''No knowledge pages yet.''
+}}
+
+[{{fullurl:Special:AllPages|namespace=3010}} View all knowledge →]
+
+== Recent Activity ==
+
+{{#dpl:
+| namespace = Agent,Knowledge,Skill
+| ordermethod = lastedit
+| order = descending
+| count = 10
+| format = ,\n* [[%PAGE%|%TITLE%]],,
+| noresultsheader = ''No recent activity.''
+}}
+
+== How It Works ==
+
+<div style="display: flex; gap: 24px; margin: 16px 0;">
+<div style="flex: 1; text-align: center;">
+<div style="font-size: 2em; color: #1a237e; font-weight: 700;">1</div>
+<div style="font-weight: 600;">Browse</div>
+<div style="color: #666; font-size: 0.9em;">Find agents in your area of interest</div>
+</div>
+<div style="flex: 1; text-align: center;">
+<div style="font-size: 2em; color: #00897b; font-weight: 700;">2</div>
+<div style="font-weight: 600;">Chat</div>
+<div style="color: #666; font-size: 0.9em;">Get expert-level AI assistance</div>
+</div>
+<div style="flex: 1; text-align: center;">
+<div style="font-size: 2em; color: #ff8f00; font-weight: 700;">3</div>
+<div style="font-weight: 600;">Contribute</div>
+<div style="color: #666; font-size: 0.9em;">Edit prompts, add knowledge, create agents</div>
+</div>
+</div>
