@@ -106,15 +106,18 @@ export async function POST(
           const skillTitle = skillMatch[1].trim();
           console.log(`[SKILL] Agent invoked: ${skillTitle}`);
           const skillPage = await getPageContent(skillTitle);
+          console.log(`[SKILL] Page fetched: ${skillPage ? 'yes (' + skillPage.wikitext.length + ' chars)' : 'NOT FOUND'}`);
 
           if (skillPage) {
             const skillContent = extractSystemPrompt(skillPage.wikitext);
+            console.log(`[SKILL] Extracted content: ${skillContent.length} chars`);
             let skillResponse = '';
 
+            // Use base system prompt (without skill catalog) to prevent recursive skill invocation
             for await (const event of provider.stream({
-              systemPrompt: systemPromptFinal,
+              systemPrompt,
               messages: llmMessages,
-              skillInstructions: `You are now using the skill "${skillTitle}". Follow these instructions precisely:\n\n${skillContent}`,
+              skillInstructions: `You are now using the skill "${skillTitle}". Follow these instructions precisely. Do NOT respond with [USE_SKILL]. Generate the actual content.\n\n${skillContent}`,
               knowledgeContext,
             })) {
               if (event.type === 'text' && event.text) {
