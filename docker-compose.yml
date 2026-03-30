@@ -40,7 +40,9 @@ services:
       - ./mediawiki/extensions/CirrusSearch:/var/www/html/extensions/CirrusSearch
       - ./mediawiki/extensions/Elastica:/var/www/html/extensions/Elastica
       - ./mediawiki/extensions/MentiSphereChat:/var/www/html/extensions/MentiSphereChat
-      - ./mediawiki/logo.png:/var/www/html/resources/assets/mentisphere-logo.png:ro
+      - ./mediawiki/logo-icon.png:/var/www/html/resources/assets/mentisphere-logo-icon.png:ro
+      - ./mediawiki/logo-1x.png:/var/www/html/resources/assets/mentisphere-logo-1x.png:ro
+      - ./mediawiki/logo-2x.png:/var/www/html/resources/assets/mentisphere-logo-2x.png:ro
       - wiki-images:/var/www/html/images
     depends_on:
       mariadb:

@@ -2,7 +2,7 @@ import type { MWUserInfo, MWPageContent } from './types';
 
 const MW_API_URL = process.env.MEDIAWIKI_API_URL!;
 
-async function mwApiFetch(params: Record<string, string>, cookie?: string): Promise<any> {
+async function mwApiFetch(params: Record<string, string>, cookie?: string, clientIp?: string): Promise<any> {
   const url = new URL(MW_API_URL);
   url.searchParams.set('format', 'json');
   url.searchParams.set('formatversion', '2');
@@ -14,6 +14,9 @@ async function mwApiFetch(params: Record<string, string>, cookie?: string): Prom
   if (cookie) {
     headers['Cookie'] = cookie;
   }
+  if (clientIp) {
+    headers['X-Forwarded-For'] = clientIp;
+  }
 
   const res = await fetch(url.toString(), { headers, cache: 'no-store' });
   if (!res.ok) {
@@ -22,9 +25,9 @@ async function mwApiFetch(params: Record<string, string>, cookie?: string): Prom
   return res.json();
 }
 
-export async function validateSession(cookie: string): Promise<MWUserInfo | null> {
+export async function validateSession(cookie: string, clientIp?: string): Promise<MWUserInfo | null> {
   try {
-    const data = await mwApiFetch({ action: 'query', meta: 'userinfo' }, cookie);
+    const data = await mwApiFetch({ action: 'query', meta: 'userinfo' }, cookie, clientIp);
     const userinfo = data.query?.userinfo;
     if (!userinfo || userinfo.anon) {
       return null;
@@ -65,19 +68,16 @@ export async function getPageContent(pageTitle: string): Promise<MWPageContent |
 }
 
 export function extractSystemPrompt(wikitext: string): string {
-  // Extract everything after the template call (the actual prompt content)
-  // Remove the {{AgentPage ...}} template block
   const templateEnd = wikitext.indexOf('}}');
   if (templateEnd === -1) return wikitext;
 
   const promptContent = wikitext.slice(templateEnd + 2).trim();
 
-  // Convert wikitext headers to plain text
   return promptContent
     .replace(/^==\s*(.+?)\s*==$/gm, '$1:')
     .replace(/^===\s*(.+?)\s*===$/gm, '$1:')
-    .replace(/\[\[(?:[^\]|]*\|)?([^\]]+)\]\]/g, '$1') // [[link|text]] → text
-    .replace(/'''(.+?)'''/g, '$1') // bold
-    .replace(/''(.+?)''/g, '$1') // italic
+    .replace(/\[\[(?:[^\]|]*\|)?([^\]]+)\]\]/g, '$1')
+    .replace(/'''(.+?)'''/g, '$1')
+    .replace(/''(.+?)''/g, '$1')
     .trim();
 }

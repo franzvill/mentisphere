@@ -39,8 +39,9 @@ $wgResourceBasePath = $wgScriptPath;
 ## The URL paths to the logo.  Make sure you change this from the default,
 ## or else you'll overwrite your logo when you upgrade!
 $wgLogos = [
-	'1x' => "$wgResourceBasePath/resources/assets/mentisphere-logo.png",
-	'icon' => "$wgResourceBasePath/resources/assets/mentisphere-logo.png",
+	'1x' => "$wgResourceBasePath/resources/assets/mentisphere-logo-1x.png",
+	'2x' => "$wgResourceBasePath/resources/assets/mentisphere-logo-2x.png",
+	'icon' => "$wgResourceBasePath/resources/assets/mentisphere-logo-icon.png",
 ];
 
 ## UPO means: this is also a user preference option
@@ -197,6 +198,15 @@ $wgScribuntoDefaultEngine = 'luasandbox';
 $wgVisualEditorAvailableNamespaces[NS_AGENT] = true;
 $wgVisualEditorAvailableNamespaces[NS_KNOWLEDGE] = true;
 $wgVisualEditorAvailableNamespaces[NS_SKILL] = true;
+
+# Allow session validation from internal Docker IPs (chat service)
+# MW signs session tokens using the secret key + IP by default
+$wgSessionInsecureSecrets = true;
+$wgCookieSameSite = 'Lax';
+
+# Trust Docker network as proxy so X-Forwarded-For is used for session IP
+$wgCdnServersNoPurge = [ '172.16.0.0/12', '192.168.0.0/16', '10.0.0.0/8' ];
+$wgUsePrivateIPs = true;
 
 # MentiSphere Chat Extension
 wfLoadExtension( 'MentiSphereChat' );
