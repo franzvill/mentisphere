@@ -24,11 +24,24 @@ export const chatSessions = pgTable('chat_sessions', {
   index('idx_sessions_agent').on(table.agentPageTitle),
 ]);
 
+export const conversations = pgTable('conversations', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  mwUserId: integer('mw_user_id').notNull(),
+  mwUsername: text('mw_username').notNull(),
+  title: text('title').notNull().default('New conversation'),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+}, (table) => [
+  index('idx_conversations_user').on(table.mwUserId),
+]);
+
 export const chatMessages = pgTable('chat_messages', {
   id: uuid('id').defaultRandom().primaryKey(),
-  sessionId: uuid('session_id').notNull().references(() => chatSessions.id, { onDelete: 'cascade' }),
+  sessionId: uuid('session_id').references(() => chatSessions.id, { onDelete: 'cascade' }),
+  conversationId: uuid('conversation_id').references(() => conversations.id, { onDelete: 'cascade' }),
   role: text('role', { enum: ['user', 'assistant'] }).notNull(),
   content: text('content').notNull(),
+  agentPageTitle: text('agent_page_title'),
   rating: text('rating', { enum: ['helpful', 'not_helpful'] }),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 }, (table) => [

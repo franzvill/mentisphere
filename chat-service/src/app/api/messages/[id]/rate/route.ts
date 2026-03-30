@@ -33,6 +33,10 @@ export async function POST(
     return NextResponse.json({ error: 'Message not found' }, { status: 404 });
   }
 
+  if (!message.sessionId) {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  }
+
   const session = await db.query.chatSessions.findFirst({
     where: eq(chatSessions.id, message.sessionId),
   });
