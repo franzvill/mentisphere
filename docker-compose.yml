@@ -80,7 +80,6 @@ services:
     environment:
       DATABASE_URL: postgresql://mentisphere:${PG_PASSWORD}@postgres:5432/mentisphere_chat
       MEDIAWIKI_API_URL: http://mediawiki:80/api.php
-      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
       CHAT_SERVICE_SECRET: ${CHAT_SERVICE_SECRET}
 

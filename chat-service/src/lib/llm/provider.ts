@@ -1,11 +1,11 @@
 import type { LLMProvider } from './types';
-import { AnthropicProvider } from './anthropic';
+import { OpenAIProvider } from './openai';
 
 let provider: LLMProvider | null = null;
 
 export function getLLMProvider(): LLMProvider {
   if (!provider) {
-    provider = new AnthropicProvider();
+    provider = new OpenAIProvider();
   }
   return provider;
 }
