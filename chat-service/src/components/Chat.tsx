@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import Sidebar, { type Conversation } from "./Sidebar";
 import MessageList, { type Message } from "./MessageList";
 import ChatInput from "./ChatInput";
@@ -24,10 +25,17 @@ export default function Chat() {
     undefined
   );
 
-  // Fetch conversation list on mount
+  const searchParams = useSearchParams();
+
+  // Fetch conversation list on mount + auto-send ?q= param
   useEffect(() => {
     fetchConversations();
-  }, []);
+    const initialQuery = searchParams.get("q");
+    if (initialQuery) {
+      // Auto-send the query from homepage
+      setTimeout(() => handleSend(initialQuery), 500);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function fetchConversations() {
     try {

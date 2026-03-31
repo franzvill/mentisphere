@@ -142,28 +142,20 @@ export default function Sidebar({
           )}
         </nav>
 
-        {/* Footer */}
-        <div className="border-t border-white/10 px-3 py-3">
-          <a
-            href="/"
-            className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-gray-400 transition hover:bg-white/10 hover:text-white"
-          >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 16 16"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M2 8.5V13.5C2 14.05 2.45 14.5 3 14.5H6V10H10V14.5H13C13.55 14.5 14 14.05 14 13.5V8.5M1 9L8 2L15 9"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-            Back to Wiki
+        {/* Wiki Navigation */}
+        <div className="border-t border-white/10 px-3 py-3 space-y-0.5">
+          <div className="px-2 py-1 text-[10px] uppercase tracking-wider text-gray-500">Wiki</div>
+          <a href="/wiki/Main_Page" className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-gray-400 transition hover:bg-white/10 hover:text-white">
+            Home
+          </a>
+          <a href="/wiki/Special:AllPages?namespace=3000" className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-gray-400 transition hover:bg-white/10 hover:text-white">
+            Browse Agents
+          </a>
+          <a href="/wiki/Special:AllPages?namespace=3010" className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-gray-400 transition hover:bg-white/10 hover:text-white">
+            Browse Knowledge
+          </a>
+          <a href="/wiki/Special:RecentChanges" className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-gray-400 transition hover:bg-white/10 hover:text-white">
+            Recent Changes
           </a>
         </div>
       </aside>
