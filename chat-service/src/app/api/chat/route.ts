@@ -9,6 +9,7 @@ import { z } from 'zod';
 const chatSchema = z.object({
   conversationId: z.string().uuid().optional(),
   message: z.string().min(1).max(10000),
+  agent: z.string().optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -69,7 +70,7 @@ export async function POST(request: NextRequest) {
   const result = await graph.invoke({
     userMessage: parsed.data.message,
     conversationHistory: history.map(m => ({ role: m.role, content: m.content })),
-    selectedAgent: previousAgent,
+    selectedAgent: parsed.data.agent || previousAgent,
   });
 
   // Save assistant message with agent attribution

@@ -1,62 +1,49 @@
 import OpenAI from 'openai';
-import { getPageContent } from '@/lib/mediawiki/client';
+import { db } from '@/db';
+import { sql } from 'drizzle-orm';
+import { generateEmbedding } from '@/lib/rag/embeddings';
 import { ChatGraphState } from './state';
 
-// Cache agent list (refresh every 5 minutes)
-let agentCache: { title: string; description: string }[] = [];
-let lastCacheTime = 0;
+async function findRelevantAgents(query: string, topK: number = 5) {
+  const queryEmbedding = await generateEmbedding(query);
+  const embeddingStr = `[${queryEmbedding.join(',')}]`;
 
-async function getAgentList(): Promise<{ title: string; description: string }[]> {
-  if (Date.now() - lastCacheTime < 5 * 60 * 1000 && agentCache.length > 0) {
-    return agentCache;
-  }
+  const result = await db.execute(
+    sql`SELECT page_title, name, description,
+             1 - (embedding <=> ${embeddingStr}::vector) as similarity
+        FROM agent_embeddings
+        ORDER BY embedding <=> ${embeddingStr}::vector
+        LIMIT ${topK}`
+  );
 
-  // Fetch all agent pages from MW API
-  const res = await fetch(`${process.env.MEDIAWIKI_API_URL}?action=query&list=allpages&apnamespace=3000&format=json&formatversion=2`, {
-    headers: { 'Host': 'localhost' },
-    cache: 'no-store',
-  });
-  const data = await res.json();
-  const pages = data.query?.allpages || [];
-
-  const agents: { title: string; description: string }[] = [];
-  for (const page of pages) {
-    const content = await getPageContent(page.title);
-    if (content) {
-      const descMatch = content.wikitext.match(/\|\s*description\s*=\s*([^\n|}]+)/);
-      const nameMatch = content.wikitext.match(/\|\s*name\s*=\s*([^\n|}]+)/);
-      agents.push({
-        title: page.title,
-        description: `${nameMatch?.[1]?.trim() || page.title}: ${descMatch?.[1]?.trim() || 'No description'}`,
-      });
-    }
-  }
-
-  agentCache = agents;
-  lastCacheTime = Date.now();
-  return agents;
+  return (result as any[]).map(row => ({
+    title: row.page_title,
+    name: row.name,
+    description: row.description,
+    similarity: row.similarity,
+  }));
 }
 
 export async function routerNode(state: typeof ChatGraphState.State) {
-  const agents = await getAgentList();
-
-  if (agents.length === 0) {
-    return { selectedAgent: null };
-  }
-
-  if (agents.length === 1) {
-    return { selectedAgent: agents[0].title };
-  }
-
-  // If conversation already has an agent, check if we should keep it
+  // If conversation already has an agent, keep it
   if (state.selectedAgent) {
-    // For simplicity in MVP: keep the same agent within a conversation
-    // unless the user explicitly asks to switch
     return { selectedAgent: state.selectedAgent };
   }
 
+  // Semantic search for top-5 matching agents
+  const candidates = await findRelevantAgents(state.userMessage, 5);
+
+  if (candidates.length === 0) {
+    return { selectedAgent: null };
+  }
+
+  if (candidates.length === 1) {
+    return { selectedAgent: candidates[0].title };
+  }
+
+  // LLM picks from the short list
   const client = new OpenAI();
-  const agentList = agents.map(a => `- ${a.title}: ${a.description}`).join('\n');
+  const agentList = candidates.map(a => `- ${a.title}: ${a.name} — ${a.description}`).join('\n');
 
   const response = await client.chat.completions.create({
     model: 'gpt-4o-mini',
@@ -64,14 +51,16 @@ export async function routerNode(state: typeof ChatGraphState.State) {
     messages: [
       {
         role: 'system',
-        content: `You are a routing assistant. Given a user message, pick the most appropriate agent from the list below. Respond with ONLY the agent page title (e.g., "Agent:Medical_Triage"), nothing else.\n\nAvailable agents:\n${agentList}`,
+        content: `You are a routing assistant. Given a user message, pick the most appropriate agent. Respond with ONLY the agent page title (e.g., "Agent:Medical_Triage"), nothing else.\n\nAvailable agents:\n${agentList}`,
       },
       { role: 'user', content: state.userMessage },
     ],
   });
 
-  const picked = response.choices[0]?.message?.content?.trim() || agents[0].title;
-  // Validate the picked agent exists
-  const valid = agents.find(a => a.title === picked);
-  return { selectedAgent: valid ? picked : agents[0].title };
+  const picked = response.choices[0]?.message?.content?.trim() || candidates[0].title;
+  const valid = candidates.find(a => a.title === picked);
+  return { selectedAgent: valid ? picked : candidates[0].title };
 }
+
+// Export for use by the search API
+export { findRelevantAgents };

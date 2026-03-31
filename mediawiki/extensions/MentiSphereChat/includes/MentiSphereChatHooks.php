@@ -26,6 +26,8 @@ class MentiSphereChatHooks {
 			$type = 'knowledge';
 		} elseif ( $title->getNamespace() === NS_SKILL ) {
 			$type = 'skill';
+		} elseif ( $title->getNamespace() === NS_AGENT ) {
+			$type = 'agent';
 		} else {
 			return;
 		}

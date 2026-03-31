@@ -5,6 +5,7 @@ import Sidebar, { type Conversation } from "./Sidebar";
 import MessageList, { type Message } from "./MessageList";
 import ChatInput from "./ChatInput";
 import EmptyState from "./EmptyState";
+import AgentSearch from "./AgentSearch";
 
 export default function Chat() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -14,6 +15,8 @@ export default function Chat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState<string | null>(null);
+  const [manualAgent, setManualAgent] = useState<string | null>(null);
+  const [agentSearchOpen, setAgentSearchOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   // Value injected from EmptyState suggestion
@@ -67,6 +70,7 @@ export default function Chat() {
     setActiveConversationId(null);
     setMessages([]);
     setSelectedAgent(null);
+    setManualAgent(null);
   }, []);
 
   // Send a message
@@ -98,6 +102,7 @@ export default function Chat() {
           body: JSON.stringify({
             conversationId: activeConversationId || undefined,
             message: text,
+            agent: manualAgent || undefined,
           }),
         });
 
@@ -180,7 +185,7 @@ export default function Chat() {
         fetchConversations();
       }
     },
-    [isStreaming, activeConversationId]
+    [isStreaming, activeConversationId, manualAgent]
   );
 
   const handlePromptClick = useCallback((prompt: string) => {
@@ -228,9 +233,27 @@ export default function Chat() {
               />
             </svg>
           </button>
-          <h2 className="truncate text-sm font-medium text-gray-700">
-            {selectedAgent ? selectedAgent : "MentiSphere"}
-          </h2>
+          <div className="flex items-center gap-2">
+            <span className="truncate text-sm font-semibold text-[#1a237e]">
+              {selectedAgent ? selectedAgent.replace('Agent:', '').replace(/_/g, ' ') : 'MentiSphere'}
+            </span>
+            {selectedAgent && (
+              <button
+                onClick={() => setAgentSearchOpen(true)}
+                className="text-xs text-gray-400 hover:text-[#1a237e] transition-colors"
+              >
+                Switch
+              </button>
+            )}
+            {!selectedAgent && messages.length === 0 && (
+              <button
+                onClick={() => setAgentSearchOpen(true)}
+                className="text-xs text-gray-400 hover:text-[#1a237e] transition-colors"
+              >
+                Browse agents
+              </button>
+            )}
+          </div>
         </header>
 
         {/* Messages or empty state */}
@@ -248,6 +271,17 @@ export default function Chat() {
           onExternalValueConsumed={() => setPendingPrompt(undefined)}
         />
       </div>
+
+      {/* Agent search modal */}
+      <AgentSearch
+        currentAgent={selectedAgent}
+        onSelectAgent={(agent) => {
+          setSelectedAgent(agent);
+          setManualAgent(agent);
+        }}
+        isOpen={agentSearchOpen}
+        onClose={() => setAgentSearchOpen(false)}
+      />
     </div>
   );
 }
