@@ -3,7 +3,7 @@ import { db } from '@/db';
 import { chatSessions, chatMessages, agentStats, skillRegistry } from '@/db/schema';
 import { authenticateRequest } from '@/lib/auth';
 import { getPageContent, extractSystemPrompt } from '@/lib/mediawiki/client';
-import { getLLMProvider } from '@/lib/llm/provider';
+import { getLLMProvider, NoKeyError } from '@/lib/llm/provider';
 import type { LLMProviderType } from '@/lib/llm/types';
 import { retrieveRelevantChunks } from '@/lib/rag/retrieval';
 import { eq, asc, sql } from 'drizzle-orm';
@@ -84,7 +84,25 @@ export async function POST(
   const apiKey = request.headers.get('x-llm-key');
   const llmModel = request.headers.get('x-llm-model');
 
-  const provider = getLLMProvider(providerType || undefined, apiKey || undefined, llmModel || undefined);
+  let provider;
+  try {
+    provider = getLLMProvider(providerType || undefined, apiKey || undefined, llmModel || undefined);
+  } catch (err) {
+    if (err instanceof NoKeyError) {
+      const encoder = new TextEncoder();
+      const errStream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'error', error: 'Please configure your API key in LLM Settings (gear icon) before chatting.' })}\n\n`));
+          controller.close();
+        },
+      });
+      return new Response(errStream, {
+        headers: { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache' },
+      });
+    }
+    throw err;
+  }
+
   const encoder = new TextEncoder();
 
   const stream = new ReadableStream({

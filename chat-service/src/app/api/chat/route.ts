@@ -3,6 +3,7 @@ import { db } from '@/db';
 import { conversations, chatMessages } from '@/db/schema';
 import { authenticateRequest } from '@/lib/auth';
 import { createChatGraph } from '@/graph';
+import { NoKeyError } from '@/lib/llm/provider';
 import type { LLMProviderType } from '@/lib/llm/types';
 import { eq, asc, desc } from 'drizzle-orm';
 import { z } from 'zod';
@@ -73,14 +74,31 @@ export async function POST(request: NextRequest) {
 
   // Run LangGraph
   const graph = createChatGraph();
-  const result = await graph.invoke({
-    userMessage: parsed.data.message,
-    conversationHistory: history.map(m => ({ role: m.role, content: m.content })),
-    selectedAgent: parsed.data.agent || previousAgent,
-    llmProvider: llmProvider || null,
-    llmKey: llmKey || null,
-    llmModel: llmModel || null,
-  });
+  let result;
+  try {
+    result = await graph.invoke({
+      userMessage: parsed.data.message,
+      conversationHistory: history.map(m => ({ role: m.role, content: m.content })),
+      selectedAgent: parsed.data.agent || previousAgent,
+      llmProvider: llmProvider || null,
+      llmKey: llmKey || null,
+      llmModel: llmModel || null,
+    });
+  } catch (err) {
+    if (err instanceof NoKeyError) {
+      const encoder = new TextEncoder();
+      const errStream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'error', error: 'Please configure your API key in LLM Settings (gear icon) before chatting.' })}\n\n`));
+          controller.close();
+        },
+      });
+      return new Response(errStream, {
+        headers: { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache' },
+      });
+    }
+    throw err;
+  }
 
   // Save assistant message with agent attribution
   const [saved] = await db.insert(chatMessages).values({

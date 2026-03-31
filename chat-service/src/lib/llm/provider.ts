@@ -4,22 +4,38 @@ import { OpenAIProvider } from './openai';
 import { AnthropicProvider } from './anthropic';
 import { GeminiProvider } from './gemini';
 
-// Default provider (uses server env key)
-let defaultProvider: LLMProvider | null = null;
+export class NoKeyError extends Error {
+  constructor() {
+    super('No API key configured. Please set your LLM API key in Settings.');
+    this.name = 'NoKeyError';
+  }
+}
 
+/**
+ * Get an LLM provider for chat responses.
+ * Requires user-provided key — server key is reserved for embeddings/routing only.
+ */
 export function getLLMProvider(providerType?: LLMProviderType, apiKey?: string, model?: string): LLMProvider {
-  // If user provides their own key, create a fresh provider
-  if (apiKey && providerType) {
-    switch (providerType) {
-      case 'openai': return new OpenAIProvider(apiKey, model);
-      case 'anthropic': return new AnthropicProvider(apiKey, model);
-      case 'gemini': return new GeminiProvider(apiKey, model);
-    }
+  if (!apiKey || !providerType) {
+    throw new NoKeyError();
   }
 
-  // Fall back to server default (OpenAI from env)
-  if (!defaultProvider) {
-    defaultProvider = new OpenAIProvider();
+  switch (providerType) {
+    case 'openai': return new OpenAIProvider(apiKey, model);
+    case 'anthropic': return new AnthropicProvider(apiKey, model);
+    case 'gemini': return new GeminiProvider(apiKey, model);
   }
-  return defaultProvider;
+}
+
+/**
+ * Get an LLM provider for internal use (routing, embeddings).
+ * Uses the server's OPENAI_API_KEY from env — never for user-facing chat.
+ */
+let internalProvider: LLMProvider | null = null;
+
+export function getInternalLLMProvider(model?: string): LLMProvider {
+  if (!internalProvider) {
+    internalProvider = new OpenAIProvider(undefined, model);
+  }
+  return internalProvider;
 }
