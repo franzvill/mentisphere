@@ -61,7 +61,6 @@ async function routeWithLLM(
   const client = new OpenAI(apiKey && providerType === 'openai' ? { apiKey } : undefined);
   const response = await client.chat.completions.create({
     model: 'gpt-5.4-nano', // cheapest/fastest for routing
-    max_tokens: 100,
     messages: [
       { role: 'system', content: systemContent },
       { role: 'user', content: userMessage },
