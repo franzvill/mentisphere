@@ -26,7 +26,6 @@ export class OpenAIProvider implements LLMProvider {
 
     const stream = await this.client.chat.completions.create({
       model: this.model,
-      max_tokens: 4096,
       stream: true,
       messages: [
         { role: 'system', content: system },

@@ -26,7 +26,7 @@ export class AnthropicProvider implements LLMProvider {
 
     const stream = this.client.messages.stream({
       model: this.model,
-      max_tokens: 4096,
+      max_tokens: 8192,
       system,
       messages: params.messages.map(m => ({
         role: m.role,
