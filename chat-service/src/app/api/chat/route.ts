@@ -69,6 +69,7 @@ export async function POST(request: NextRequest) {
   // Read BYOK headers
   const llmProvider = request.headers.get('x-llm-provider') as LLMProviderType | null;
   const llmKey = request.headers.get('x-llm-key');
+  const llmModel = request.headers.get('x-llm-model');
 
   // Run LangGraph
   const graph = createChatGraph();
@@ -78,6 +79,7 @@ export async function POST(request: NextRequest) {
     selectedAgent: parsed.data.agent || previousAgent,
     llmProvider: llmProvider || null,
     llmKey: llmKey || null,
+    llmModel: llmModel || null,
   });
 
   // Save assistant message with agent attribution

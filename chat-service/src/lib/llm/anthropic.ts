@@ -3,9 +3,11 @@ import type { LLMProvider, LLMMessage, LLMStreamEvent } from './types';
 
 export class AnthropicProvider implements LLMProvider {
   private client: Anthropic;
+  private model: string;
 
-  constructor(apiKey?: string) {
+  constructor(apiKey?: string, model?: string) {
     this.client = new Anthropic(apiKey ? { apiKey } : undefined);
+    this.model = model || 'claude-sonnet-4-6';
   }
 
   async *stream(params: {
@@ -23,7 +25,7 @@ export class AnthropicProvider implements LLMProvider {
     }
 
     const stream = this.client.messages.stream({
-      model: 'claude-sonnet-4-20250514',
+      model: this.model,
       max_tokens: 4096,
       system,
       messages: params.messages.map(m => ({

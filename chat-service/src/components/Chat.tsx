@@ -110,6 +110,7 @@ export default function Chat() {
         if (llmConfig) {
           headers["X-LLM-Provider"] = llmConfig.provider;
           headers["X-LLM-Key"] = llmConfig.key;
+          if (llmConfig.model) headers["X-LLM-Model"] = llmConfig.model;
         }
 
         const res = await fetch("/api/chat", {

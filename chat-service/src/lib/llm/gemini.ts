@@ -3,9 +3,11 @@ import type { LLMProvider, LLMMessage, LLMStreamEvent } from './types';
 
 export class GeminiProvider implements LLMProvider {
   private client: GoogleGenAI;
+  private model: string;
 
-  constructor(apiKey: string) {
+  constructor(apiKey: string, model?: string) {
     this.client = new GoogleGenAI({ apiKey });
+    this.model = model || 'gemini-3-flash';
   }
 
   async *stream(params: {
@@ -23,7 +25,7 @@ export class GeminiProvider implements LLMProvider {
     }
 
     const response = await this.client.models.generateContentStream({
-      model: 'gemini-2.0-flash',
+      model: this.model,
       config: { systemInstruction: system },
       contents: params.messages.map(m => ({
         role: m.role === 'assistant' ? 'model' : 'user',

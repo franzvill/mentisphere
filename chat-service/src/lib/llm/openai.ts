@@ -3,9 +3,11 @@ import type { LLMProvider, LLMMessage, LLMStreamEvent } from './types';
 
 export class OpenAIProvider implements LLMProvider {
   private client: OpenAI;
+  private model: string;
 
-  constructor(apiKey?: string) {
+  constructor(apiKey?: string, model?: string) {
     this.client = new OpenAI(apiKey ? { apiKey } : undefined);
+    this.model = model || 'gpt-5.4';
   }
 
   async *stream(params: {
@@ -23,7 +25,7 @@ export class OpenAIProvider implements LLMProvider {
     }
 
     const stream = await this.client.chat.completions.create({
-      model: 'gpt-4o',
+      model: this.model,
       max_tokens: 4096,
       stream: true,
       messages: [

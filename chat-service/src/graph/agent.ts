@@ -49,6 +49,7 @@ export async function agentNode(state: typeof ChatGraphState.State) {
   const provider = getLLMProvider(
     (state.llmProvider as LLMProviderType) || undefined,
     state.llmKey || undefined,
+    state.llmModel || undefined,
   );
   let firstResponse = '';
   for await (const event of provider.stream({

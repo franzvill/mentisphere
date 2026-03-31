@@ -82,8 +82,9 @@ export async function POST(
   // Read BYOK headers
   const providerType = request.headers.get('x-llm-provider') as LLMProviderType | null;
   const apiKey = request.headers.get('x-llm-key');
+  const llmModel = request.headers.get('x-llm-model');
 
-  const provider = getLLMProvider(providerType || undefined, apiKey || undefined);
+  const provider = getLLMProvider(providerType || undefined, apiKey || undefined, llmModel || undefined);
   const encoder = new TextEncoder();
 
   const stream = new ReadableStream({

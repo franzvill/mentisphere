@@ -38,7 +38,7 @@ async function routeWithLLM(
   if (apiKey && providerType === 'anthropic') {
     const client = new Anthropic({ apiKey });
     const response = await client.messages.create({
-      model: 'claude-haiku-4-5-20251001',
+      model: 'claude-haiku-4-5-20251001', // cheapest/fastest for routing
       max_tokens: 100,
       system: systemContent,
       messages: [{ role: 'user', content: userMessage }],
@@ -50,7 +50,7 @@ async function routeWithLLM(
   if (apiKey && providerType === 'gemini') {
     const client = new GoogleGenAI({ apiKey });
     const response = await client.models.generateContent({
-      model: 'gemini-2.0-flash',
+      model: 'gemini-3.1-flash-lite', // cheapest/fastest for routing
       config: { systemInstruction: systemContent },
       contents: [{ role: 'user', parts: [{ text: userMessage }] }],
     });
@@ -60,7 +60,7 @@ async function routeWithLLM(
   // Default: OpenAI (with optional user key)
   const client = new OpenAI(apiKey && providerType === 'openai' ? { apiKey } : undefined);
   const response = await client.chat.completions.create({
-    model: 'gpt-4o-mini',
+    model: 'gpt-5.4-nano', // cheapest/fastest for routing
     max_tokens: 100,
     messages: [
       { role: 'system', content: systemContent },

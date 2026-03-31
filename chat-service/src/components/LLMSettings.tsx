@@ -2,41 +2,90 @@
 import { useState, useEffect } from "react";
 
 const PROVIDERS = [
-  { id: 'openai', name: 'OpenAI', placeholder: 'sk-...' },
-  { id: 'anthropic', name: 'Claude (Anthropic)', placeholder: 'sk-ant-...' },
-  { id: 'gemini', name: 'Gemini (Google)', placeholder: 'AI...' },
+  {
+    id: 'openai',
+    name: 'OpenAI',
+    placeholder: 'sk-...',
+    models: [
+      { id: 'gpt-5.4', name: 'GPT-5.4 (Flagship)' },
+      { id: 'gpt-5.4-mini', name: 'GPT-5.4 Mini (Fast)' },
+      { id: 'gpt-5.4-nano', name: 'GPT-5.4 Nano (Cheapest)' },
+      { id: 'gpt-4o', name: 'GPT-4o (Previous gen)' },
+    ],
+  },
+  {
+    id: 'anthropic',
+    name: 'Claude (Anthropic)',
+    placeholder: 'sk-ant-...',
+    models: [
+      { id: 'claude-opus-4-6', name: 'Claude Opus 4.6 (Most capable)' },
+      { id: 'claude-sonnet-4-6', name: 'Claude Sonnet 4.6 (Best value)' },
+      { id: 'claude-haiku-4-5-20251001', name: 'Claude Haiku 4.5 (Fast)' },
+    ],
+  },
+  {
+    id: 'gemini',
+    name: 'Gemini (Google)',
+    placeholder: 'AI...',
+    models: [
+      { id: 'gemini-3.1-pro', name: 'Gemini 3.1 Pro (Most capable)' },
+      { id: 'gemini-3-flash', name: 'Gemini 3 Flash (Fast)' },
+      { id: 'gemini-3.1-flash-lite', name: 'Gemini 3.1 Flash-Lite (Cheapest)' },
+    ],
+  },
 ];
 
-export function getLLMConfig(): { provider: string; key: string } | null {
+export function getLLMConfig(): { provider: string; key: string; model: string } | null {
   if (typeof window === 'undefined') return null;
   const provider = localStorage.getItem('ms-llm-provider');
   const key = localStorage.getItem('ms-llm-key');
-  if (provider && key) return { provider, key };
+  const model = localStorage.getItem('ms-llm-model');
+  if (provider && key) return { provider, key, model: model || '' };
   return null;
 }
 
-export function setLLMConfig(provider: string, key: string) {
+export function setLLMConfig(provider: string, key: string, model: string) {
   localStorage.setItem('ms-llm-provider', provider);
   localStorage.setItem('ms-llm-key', key);
+  localStorage.setItem('ms-llm-model', model);
 }
 
 export function clearLLMConfig() {
   localStorage.removeItem('ms-llm-provider');
   localStorage.removeItem('ms-llm-key');
+  localStorage.removeItem('ms-llm-model');
 }
 
 export default function LLMSettings({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const [provider, setProvider] = useState('openai');
+  const [model, setModel] = useState('gpt-5.4');
   const [key, setKey] = useState('');
   const [saved, setSaved] = useState(false);
+
+  const currentProviderData = PROVIDERS.find(p => p.id === provider) ?? PROVIDERS[0];
 
   useEffect(() => {
     const config = getLLMConfig();
     if (config) {
       setProvider(config.provider);
       setKey(config.key);
+      if (config.model) {
+        setModel(config.model);
+      } else {
+        // Default to first model of saved provider
+        const providerData = PROVIDERS.find(p => p.id === config.provider);
+        if (providerData) setModel(providerData.models[0].id);
+      }
     }
   }, [isOpen]);
+
+  function handleProviderChange(newProvider: string) {
+    setProvider(newProvider);
+    // Reset model to first option of the new provider
+    const providerData = PROVIDERS.find(p => p.id === newProvider);
+    if (providerData) setModel(providerData.models[0].id);
+    setSaved(false);
+  }
 
   if (!isOpen) return null;
 
@@ -51,11 +100,22 @@ export default function LLMSettings({ isOpen, onClose }: { isOpen: boolean; onCl
         <label className="block text-sm font-medium mb-1">Provider</label>
         <select
           value={provider}
-          onChange={e => { setProvider(e.target.value); setSaved(false); }}
+          onChange={e => handleProviderChange(e.target.value)}
           className="w-full border rounded-lg px-3 py-2 mb-4 text-sm"
         >
           {PROVIDERS.map(p => (
             <option key={p.id} value={p.id}>{p.name}</option>
+          ))}
+        </select>
+
+        <label className="block text-sm font-medium mb-1">Model</label>
+        <select
+          value={model}
+          onChange={e => { setModel(e.target.value); setSaved(false); }}
+          className="w-full border rounded-lg px-3 py-2 mb-4 text-sm"
+        >
+          {currentProviderData.models.map(m => (
+            <option key={m.id} value={m.id}>{m.name}</option>
           ))}
         </select>
 
@@ -64,14 +124,14 @@ export default function LLMSettings({ isOpen, onClose }: { isOpen: boolean; onCl
           type="password"
           value={key}
           onChange={e => { setKey(e.target.value); setSaved(false); }}
-          placeholder={PROVIDERS.find(p => p.id === provider)?.placeholder}
+          placeholder={currentProviderData.placeholder}
           className="w-full border rounded-lg px-3 py-2 mb-4 text-sm"
         />
 
         <div className="flex gap-2">
           <button
             onClick={() => {
-              setLLMConfig(provider, key);
+              setLLMConfig(provider, key, model);
               setSaved(true);
               setTimeout(onClose, 800);
             }}

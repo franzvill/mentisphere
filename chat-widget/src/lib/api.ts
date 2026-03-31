@@ -11,9 +11,11 @@ function getLLMHeaders(): Record<string, string> {
   try {
     const provider = localStorage.getItem('ms-llm-provider');
     const key = localStorage.getItem('ms-llm-key');
+    const model = localStorage.getItem('ms-llm-model');
     if (provider && key) {
       headers['X-LLM-Provider'] = provider;
       headers['X-LLM-Key'] = key;
+      if (model) headers['X-LLM-Model'] = model;
     }
   } catch {
     // localStorage may be unavailable
