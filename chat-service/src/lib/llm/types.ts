@@ -1,3 +1,5 @@
+export type LLMProviderType = 'openai' | 'anthropic' | 'gemini';
+
 export interface LLMMessage {
   role: 'user' | 'assistant';
   content: string;

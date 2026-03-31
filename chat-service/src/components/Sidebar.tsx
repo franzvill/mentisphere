@@ -14,6 +14,7 @@ interface SidebarProps {
   onToggle: () => void;
   onSelect: (id: string) => void;
   onNewChat: () => void;
+  onOpenLLMSettings?: () => void;
 }
 
 /** Group conversations into Today / Yesterday / Previous 7 Days / Older */
@@ -50,6 +51,7 @@ export default function Sidebar({
   onToggle,
   onSelect,
   onNewChat,
+  onOpenLLMSettings,
 }: SidebarProps) {
   const groups = groupConversations(conversations);
 
@@ -158,6 +160,22 @@ export default function Sidebar({
             Recent Changes
           </a>
         </div>
+
+        {/* Settings */}
+        {onOpenLLMSettings && (
+          <div className="border-t border-white/10 px-3 py-3">
+            <button
+              onClick={onOpenLLMSettings}
+              className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-gray-400 transition hover:bg-white/10 hover:text-white"
+            >
+              <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10 13a3 3 0 100-6 3 3 0 000 6z" stroke="currentColor" strokeWidth="1.5"/>
+                <path d="M10 1.5l1.3 2.2a1 1 0 00.9.5h2.5l-1.3 2.2a1 1 0 000 1l1.3 2.2h-2.5a1 1 0 00-.9.5L10 12.3l-1.3-2.2a1 1 0 00-.9-.5H5.3l1.3-2.2a1 1 0 000-1L5.3 4.2h2.5a1 1 0 00.9-.5L10 1.5z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+              </svg>
+              LLM Settings
+            </button>
+          </div>
+        )}
       </aside>
     </>
   );

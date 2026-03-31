@@ -4,8 +4,8 @@ import type { LLMProvider, LLMMessage, LLMStreamEvent } from './types';
 export class AnthropicProvider implements LLMProvider {
   private client: Anthropic;
 
-  constructor() {
-    this.client = new Anthropic();
+  constructor(apiKey?: string) {
+    this.client = new Anthropic(apiKey ? { apiKey } : undefined);
   }
 
   async *stream(params: {

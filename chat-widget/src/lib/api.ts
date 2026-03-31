@@ -6,10 +6,25 @@ export function configure(url: string) {
   chatServiceUrl = url.replace(/\/$/, '');
 }
 
+function getLLMHeaders(): Record<string, string> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  try {
+    const provider = localStorage.getItem('ms-llm-provider');
+    const key = localStorage.getItem('ms-llm-key');
+    if (provider && key) {
+      headers['X-LLM-Provider'] = provider;
+      headers['X-LLM-Key'] = key;
+    }
+  } catch {
+    // localStorage may be unavailable
+  }
+  return headers;
+}
+
 export async function createSession(agentPageTitle: string): Promise<ChatSession> {
   const res = await fetch(`${chatServiceUrl}/sessions`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getLLMHeaders(),
     credentials: 'include',
     body: JSON.stringify({ agent_page_title: agentPageTitle }),
   });
@@ -20,7 +35,7 @@ export async function createSession(agentPageTitle: string): Promise<ChatSession
 export async function sendMessage(sessionId: string, content: string): Promise<ReadableStream<Uint8Array>> {
   const res = await fetch(`${chatServiceUrl}/sessions/${sessionId}/messages`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getLLMHeaders(),
     credentials: 'include',
     body: JSON.stringify({ content }),
   });

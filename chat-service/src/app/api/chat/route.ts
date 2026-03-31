@@ -3,6 +3,7 @@ import { db } from '@/db';
 import { conversations, chatMessages } from '@/db/schema';
 import { authenticateRequest } from '@/lib/auth';
 import { createChatGraph } from '@/graph';
+import type { LLMProviderType } from '@/lib/llm/types';
 import { eq, asc, desc } from 'drizzle-orm';
 import { z } from 'zod';
 
@@ -65,12 +66,18 @@ export async function POST(request: NextRequest) {
     content: parsed.data.message,
   });
 
+  // Read BYOK headers
+  const llmProvider = request.headers.get('x-llm-provider') as LLMProviderType | null;
+  const llmKey = request.headers.get('x-llm-key');
+
   // Run LangGraph
   const graph = createChatGraph();
   const result = await graph.invoke({
     userMessage: parsed.data.message,
     conversationHistory: history.map(m => ({ role: m.role, content: m.content })),
     selectedAgent: parsed.data.agent || previousAgent,
+    llmProvider: llmProvider || null,
+    llmKey: llmKey || null,
   });
 
   // Save assistant message with agent attribution

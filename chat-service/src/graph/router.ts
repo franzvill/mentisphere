@@ -1,7 +1,10 @@
 import OpenAI from 'openai';
+import Anthropic from '@anthropic-ai/sdk';
+import { GoogleGenAI } from '@google/genai';
 import { db } from '@/db';
 import { sql } from 'drizzle-orm';
 import { generateEmbedding } from '@/lib/rag/embeddings';
+import type { LLMProviderType } from '@/lib/llm/types';
 import { ChatGraphState } from './state';
 
 async function findRelevantAgents(query: string, topK: number = 5) {
@@ -24,6 +27,50 @@ async function findRelevantAgents(query: string, topK: number = 5) {
   }));
 }
 
+async function routeWithLLM(
+  userMessage: string,
+  agentList: string,
+  providerType?: LLMProviderType | null,
+  apiKey?: string | null,
+): Promise<string> {
+  const systemContent = `You are a routing assistant. Given a user message, pick the most appropriate agent. Respond with ONLY the agent page title (e.g., "Agent:Medical_Triage"), nothing else.\n\nAvailable agents:\n${agentList}`;
+
+  if (apiKey && providerType === 'anthropic') {
+    const client = new Anthropic({ apiKey });
+    const response = await client.messages.create({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 100,
+      system: systemContent,
+      messages: [{ role: 'user', content: userMessage }],
+    });
+    const block = response.content[0];
+    return block.type === 'text' ? block.text.trim() : '';
+  }
+
+  if (apiKey && providerType === 'gemini') {
+    const client = new GoogleGenAI({ apiKey });
+    const response = await client.models.generateContent({
+      model: 'gemini-2.0-flash',
+      config: { systemInstruction: systemContent },
+      contents: [{ role: 'user', parts: [{ text: userMessage }] }],
+    });
+    return response.text?.trim() ?? '';
+  }
+
+  // Default: OpenAI (with optional user key)
+  const client = new OpenAI(apiKey && providerType === 'openai' ? { apiKey } : undefined);
+  const response = await client.chat.completions.create({
+    model: 'gpt-4o-mini',
+    max_tokens: 100,
+    messages: [
+      { role: 'system', content: systemContent },
+      { role: 'user', content: userMessage },
+    ],
+  });
+
+  return response.choices[0]?.message?.content?.trim() || '';
+}
+
 export async function routerNode(state: typeof ChatGraphState.State) {
   // If conversation already has an agent, keep it
   if (state.selectedAgent) {
@@ -42,22 +89,15 @@ export async function routerNode(state: typeof ChatGraphState.State) {
   }
 
   // LLM picks from the short list
-  const client = new OpenAI();
   const agentList = candidates.map(a => `- ${a.title}: ${a.name} — ${a.description}`).join('\n');
 
-  const response = await client.chat.completions.create({
-    model: 'gpt-4o-mini',
-    max_tokens: 100,
-    messages: [
-      {
-        role: 'system',
-        content: `You are a routing assistant. Given a user message, pick the most appropriate agent. Respond with ONLY the agent page title (e.g., "Agent:Medical_Triage"), nothing else.\n\nAvailable agents:\n${agentList}`,
-      },
-      { role: 'user', content: state.userMessage },
-    ],
-  });
+  const picked = await routeWithLLM(
+    state.userMessage,
+    agentList,
+    (state.llmProvider as LLMProviderType) || undefined,
+    state.llmKey || undefined,
+  );
 
-  const picked = response.choices[0]?.message?.content?.trim() || candidates[0].title;
   const valid = candidates.find(a => a.title === picked);
   return { selectedAgent: valid ? picked : candidates[0].title };
 }

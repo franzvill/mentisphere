@@ -1,6 +1,7 @@
 import { getPageContent, extractSystemPrompt } from '@/lib/mediawiki/client';
 import { retrieveRelevantChunks } from '@/lib/rag/retrieval';
 import { getLLMProvider } from '@/lib/llm/provider';
+import type { LLMProviderType } from '@/lib/llm/types';
 import { db } from '@/db';
 import { skillRegistry } from '@/db/schema';
 import { ChatGraphState } from './state';
@@ -45,7 +46,10 @@ export async function agentNode(state: typeof ChatGraphState.State) {
   ];
 
   // First LLM call (collect, don't stream — check for skill invocation)
-  const provider = getLLMProvider();
+  const provider = getLLMProvider(
+    (state.llmProvider as LLMProviderType) || undefined,
+    state.llmKey || undefined,
+  );
   let firstResponse = '';
   for await (const event of provider.stream({
     systemPrompt: systemPromptFinal,

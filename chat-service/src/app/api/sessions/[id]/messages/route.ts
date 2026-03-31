@@ -4,6 +4,7 @@ import { chatSessions, chatMessages, agentStats, skillRegistry } from '@/db/sche
 import { authenticateRequest } from '@/lib/auth';
 import { getPageContent, extractSystemPrompt } from '@/lib/mediawiki/client';
 import { getLLMProvider } from '@/lib/llm/provider';
+import type { LLMProviderType } from '@/lib/llm/types';
 import { retrieveRelevantChunks } from '@/lib/rag/retrieval';
 import { eq, asc, sql } from 'drizzle-orm';
 import { z } from 'zod';
@@ -78,7 +79,11 @@ export async function POST(
     { role: 'user' as const, content: parsed.data.content },
   ];
 
-  const provider = getLLMProvider();
+  // Read BYOK headers
+  const providerType = request.headers.get('x-llm-provider') as LLMProviderType | null;
+  const apiKey = request.headers.get('x-llm-key');
+
+  const provider = getLLMProvider(providerType || undefined, apiKey || undefined);
   const encoder = new TextEncoder();
 
   const stream = new ReadableStream({

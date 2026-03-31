@@ -9,4 +9,6 @@ export const ChatGraphState = Annotation.Root({
   skillInstructions: Annotation<string | null>({ reducer: (_, b) => b, default: () => null }),
   response: Annotation<string>({ reducer: (_, b) => b, default: () => '' }),
   skillCatalog: Annotation<string>({ reducer: (_, b) => b, default: () => '' }),
+  llmProvider: Annotation<string | null>({ reducer: (_, b) => b, default: () => null }),
+  llmKey: Annotation<string | null>({ reducer: (_, b) => b, default: () => null }),
 });

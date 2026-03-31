@@ -145,6 +145,9 @@ wfLoadSkin( 'Vector' );
 wfLoadSkin( 'Citizen' );
 $wgDefaultSkin = 'citizen';
 
+# Allow img tags in wikitext (for logo in Main Page)
+$wgAllowImageTag = true;
+
 # Custom Namespaces
 define( 'NS_AGENT', 3000 );
 define( 'NS_AGENT_TALK', 3001 );

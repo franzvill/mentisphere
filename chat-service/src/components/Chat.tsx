@@ -7,6 +7,7 @@ import MessageList, { type Message } from "./MessageList";
 import ChatInput from "./ChatInput";
 import EmptyState from "./EmptyState";
 import AgentSearch from "./AgentSearch";
+import LLMSettings, { getLLMConfig } from "./LLMSettings";
 
 export default function Chat() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -19,6 +20,7 @@ export default function Chat() {
   const [manualAgent, setManualAgent] = useState<string | null>(null);
   const [agentSearchOpen, setAgentSearchOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [llmSettingsOpen, setLlmSettingsOpen] = useState(false);
 
   // Value injected from EmptyState suggestion
   const [pendingPrompt, setPendingPrompt] = useState<string | undefined>(
@@ -103,9 +105,16 @@ export default function Chat() {
       setIsStreaming(true);
 
       try {
+        const llmConfig = getLLMConfig();
+        const headers: Record<string, string> = { "Content-Type": "application/json" };
+        if (llmConfig) {
+          headers["X-LLM-Provider"] = llmConfig.provider;
+          headers["X-LLM-Key"] = llmConfig.key;
+        }
+
         const res = await fetch("/api/chat", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers,
           credentials: "include",
           body: JSON.stringify({
             conversationId: activeConversationId || undefined,
@@ -212,6 +221,7 @@ export default function Chat() {
         onToggle={() => setSidebarOpen((v) => !v)}
         onSelect={loadConversation}
         onNewChat={handleNewChat}
+        onOpenLLMSettings={() => setLlmSettingsOpen(true)}
       />
 
       {/* Main area */}
@@ -241,26 +251,39 @@ export default function Chat() {
               />
             </svg>
           </button>
-          <div className="flex items-center gap-2">
-            <span className="truncate text-sm font-semibold text-[#1a237e]">
-              {selectedAgent ? selectedAgent.replace('Agent:', '').replace(/_/g, ' ') : 'MentiSphere'}
-            </span>
-            {selectedAgent && (
-              <button
-                onClick={() => setAgentSearchOpen(true)}
-                className="text-xs text-gray-400 hover:text-[#1a237e] transition-colors"
-              >
-                Switch
-              </button>
-            )}
-            {!selectedAgent && messages.length === 0 && (
-              <button
-                onClick={() => setAgentSearchOpen(true)}
-                className="text-xs text-gray-400 hover:text-[#1a237e] transition-colors"
-              >
-                Browse agents
-              </button>
-            )}
+          <div className="flex flex-1 items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="truncate text-sm font-semibold text-[#1a237e]">
+                {selectedAgent ? selectedAgent.replace('Agent:', '').replace(/_/g, ' ') : 'MentiSphere'}
+              </span>
+              {selectedAgent && (
+                <button
+                  onClick={() => setAgentSearchOpen(true)}
+                  className="text-xs text-gray-400 hover:text-[#1a237e] transition-colors"
+                >
+                  Switch
+                </button>
+              )}
+              {!selectedAgent && messages.length === 0 && (
+                <button
+                  onClick={() => setAgentSearchOpen(true)}
+                  className="text-xs text-gray-400 hover:text-[#1a237e] transition-colors"
+                >
+                  Browse agents
+                </button>
+              )}
+            </div>
+            <button
+              onClick={() => setLlmSettingsOpen(true)}
+              className="rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-100 hover:text-[#1a237e]"
+              aria-label="LLM settings"
+              title="LLM settings"
+            >
+              <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10 13a3 3 0 100-6 3 3 0 000 6z" stroke="currentColor" strokeWidth="1.5"/>
+                <path d="M10 1.5l1.3 2.2a1 1 0 00.9.5h2.5l-1.3 2.2a1 1 0 000 1l1.3 2.2h-2.5a1 1 0 00-.9.5L10 12.3l-1.3-2.2a1 1 0 00-.9-.5H5.3l1.3-2.2a1 1 0 000-1L5.3 4.2h2.5a1 1 0 00.9-.5L10 1.5z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+              </svg>
+            </button>
           </div>
         </header>
 
@@ -289,6 +312,12 @@ export default function Chat() {
         }}
         isOpen={agentSearchOpen}
         onClose={() => setAgentSearchOpen(false)}
+      />
+
+      {/* LLM settings modal */}
+      <LLMSettings
+        isOpen={llmSettingsOpen}
+        onClose={() => setLlmSettingsOpen(false)}
       />
     </div>
   );

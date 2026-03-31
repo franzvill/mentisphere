@@ -4,8 +4,8 @@ import type { LLMProvider, LLMMessage, LLMStreamEvent } from './types';
 export class OpenAIProvider implements LLMProvider {
   private client: OpenAI;
 
-  constructor() {
-    this.client = new OpenAI();
+  constructor(apiKey?: string) {
+    this.client = new OpenAI(apiKey ? { apiKey } : undefined);
   }
 
   async *stream(params: {
