@@ -36,6 +36,9 @@ $wgServer = "http://localhost";
 ## The URL path to static resources (images, scripts, etc.)
 $wgResourceBasePath = $wgScriptPath;
 
+# Bump to invalidate ResourceLoader cache after asset changes
+$wgCacheEpoch = '20260331140000';
+
 ## The URL paths to the logo.  Make sure you change this from the default,
 ## or else you'll overwrite your logo when you upgrade!
 $wgLogos = [
@@ -223,3 +226,16 @@ wfLoadExtension( 'TemplateStyles' );
 # Short URLs
 $wgArticlePath = "/wiki/$1";
 $wgUsePathInfo = true;
+
+# Structured Garden design — Google Fonts + custom CSS
+$wgHooks['BeforePageDisplay'][] = function ( $out ) {
+	$out->addHeadItem( 'google-fonts',
+		'<link rel="preconnect" href="https://fonts.googleapis.com">' .
+		'<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>' .
+		'<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">'
+	);
+	$cssFile = MW_INSTALL_PATH . '/Common.css';
+	if ( file_exists( $cssFile ) ) {
+		$out->addInlineStyle( file_get_contents( $cssFile ) );
+	}
+};

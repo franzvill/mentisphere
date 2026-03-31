@@ -12,14 +12,17 @@
 		content.appendChild( container );
 	}
 
+	// Cache-bust version (update on each build)
+	var v = '20260330';
+
 	// Load chat widget CSS
 	var link = document.createElement( 'link' );
 	link.rel = 'stylesheet';
-	link.href = assetsUrl + '/chat-widget.css';
+	link.href = assetsUrl + '/chat-widget.css?v=' + v;
 	document.head.appendChild( link );
 
 	// Load chat widget JS
 	var script = document.createElement( 'script' );
-	script.src = assetsUrl + '/chat-widget.js';
+	script.src = assetsUrl + '/chat-widget.js?v=' + v;
 	document.body.appendChild( script );
 }() );

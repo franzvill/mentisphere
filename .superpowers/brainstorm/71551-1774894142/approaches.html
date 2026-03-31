@@ -1,0 +1,140 @@
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<h2>Design Approach</h2>
+<p class="subtitle">Same palette, same fonts — three levels of expression. Which feels right for MentiSphere?</p>
+
+<div class="cards">
+
+  <!-- Approach A: Editorial Minimalism -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 0; overflow: hidden;">
+      <!-- Simulated agent page -->
+      <div style="background: #faf8f4; padding: 0;">
+        <!-- Nav bar -->
+        <div style="border-bottom: 1px solid #e5e0d5; padding: 10px 24px; display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-family: 'Lora', serif; color: #1b2a21; font-size: 15px; font-weight: 700;">MentiSphere</span>
+          <div style="display: flex; gap: 16px;">
+            <span style="font-family: 'Inter', sans-serif; font-size: 11px; color: #6b9b7d;">Browse</span>
+            <span style="font-family: 'Inter', sans-serif; font-size: 11px; color: #888;">Contribute</span>
+            <span style="font-family: 'Inter', sans-serif; font-size: 11px; color: #888;">About</span>
+          </div>
+        </div>
+        <!-- Page content -->
+        <div style="padding: 32px 24px 20px;">
+          <div style="font-family: 'Inter', sans-serif; font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: #6b9b7d; margin-bottom: 8px;">Agent</div>
+          <div style="font-family: 'Lora', serif; font-size: 24px; color: #1b2a21; font-weight: 700; line-height: 1.25; margin-bottom: 6px;">Clinical Pharmacology</div>
+          <div style="font-family: 'Lora', serif; font-size: 13px; color: #5e7a6a; font-style: italic; margin-bottom: 20px;">Drug interactions, dosing, mechanisms of action</div>
+          <div style="width: 40px; height: 1px; background: #c4a35a; margin-bottom: 20px;"></div>
+          <div style="font-family: 'Inter', sans-serif; font-size: 12px; color: #3a4a3e; line-height: 1.7;">This agent draws from peer-reviewed research and FDA guidelines to explain pharmaceutical concepts in accessible language.</div>
+        </div>
+        <!-- Chat area -->
+        <div style="margin: 0 24px 20px; border-top: 1px solid #e5e0d5; padding-top: 16px;">
+          <div style="font-family: 'Lora', serif; font-size: 13px; color: #1b2a21; margin-bottom: 10px;">Conversation</div>
+          <div style="background: #f4f0e8; padding: 10px 14px; border-radius: 4px; margin-bottom: 8px;">
+            <div style="font-family: 'Inter', sans-serif; font-size: 11px; color: #3a4a3e; line-height: 1.6;">What are the risks of combining SSRIs with MAOIs?</div>
+          </div>
+          <div style="padding: 10px 0;">
+            <div style="font-family: 'Inter', sans-serif; font-size: 11px; color: #2d5a3f; line-height: 1.6;">Combining SSRIs with MAOIs carries a serious risk of serotonin syndrome...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Editorial Minimalism</h3>
+      <p>Maximum restraint. Typography and whitespace do all the work. Almost no decoration — just a thin gold rule and careful spacing. The forest palette whispers; content speaks. Like a well-typeset journal.</p>
+    </div>
+  </div>
+
+  <!-- Approach B: Rich Organic -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 0; overflow: hidden;">
+      <div style="background: #f4f0e8; padding: 0;">
+        <!-- Nav bar -->
+        <div style="background: #1b2a21; padding: 12px 24px; display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-family: 'Lora', serif; color: #f4f0e8; font-size: 15px; font-weight: 700;">MentiSphere</span>
+          <div style="display: flex; gap: 16px;">
+            <span style="font-family: 'Inter', sans-serif; font-size: 11px; color: #6b9b7d;">Browse</span>
+            <span style="font-family: 'Inter', sans-serif; font-size: 11px; color: #8aab98;">Contribute</span>
+            <span style="font-family: 'Inter', sans-serif; font-size: 11px; color: #8aab98;">About</span>
+          </div>
+        </div>
+        <!-- Page content -->
+        <div style="padding: 24px;">
+          <div style="background: linear-gradient(135deg, #1b2a21, #2d5a3f); padding: 24px; border-radius: 12px; margin-bottom: 16px;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+              <div style="width: 32px; height: 32px; background: rgba(196,163,90,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                <span style="font-size: 16px;">🧬</span>
+              </div>
+              <span style="font-family: 'Inter', sans-serif; font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: #c4a35a;">Agent</span>
+            </div>
+            <div style="font-family: 'Lora', serif; font-size: 22px; color: #f4f0e8; font-weight: 700; line-height: 1.25; margin-bottom: 6px;">Clinical Pharmacology</div>
+            <div style="font-family: 'Lora', serif; font-size: 12px; color: #8aab98; font-style: italic;">Drug interactions, dosing, mechanisms of action</div>
+          </div>
+          <div style="font-family: 'Inter', sans-serif; font-size: 12px; color: #3a4a3e; line-height: 1.7; padding: 0 4px;">This agent draws from peer-reviewed research and FDA guidelines to explain pharmaceutical concepts.</div>
+        </div>
+        <!-- Chat area -->
+        <div style="margin: 0 24px 20px; background: #1b2a21; border-radius: 10px; padding: 14px; overflow: hidden;">
+          <div style="font-family: 'Lora', serif; font-size: 12px; color: #c4a35a; margin-bottom: 10px;">Conversation</div>
+          <div style="background: rgba(107,155,125,0.15); padding: 8px 12px; border-radius: 8px; margin-bottom: 8px;">
+            <div style="font-family: 'Inter', sans-serif; font-size: 11px; color: #f4f0e8; line-height: 1.6;">What are the risks of combining SSRIs with MAOIs?</div>
+          </div>
+          <div style="padding: 8px 4px;">
+            <div style="font-family: 'Inter', sans-serif; font-size: 11px; color: #c8d8ce; line-height: 1.6;">Combining SSRIs with MAOIs carries a serious risk of serotonin syndrome...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Rich Organic</h3>
+      <p>Full immersion. Dark forest header, gradient hero blocks, rounded organic shapes, depth through layered dark/light sections. The chat lives in a dark "grove." Dramatic and memorable, but heavier.</p>
+    </div>
+  </div>
+
+  <!-- Approach C: Structured Garden -->
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 0; overflow: hidden;">
+      <div style="background: #faf8f4; padding: 0;">
+        <!-- Nav bar -->
+        <div style="background: #1b2a21; padding: 10px 24px; display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-family: 'Lora', serif; color: #f4f0e8; font-size: 15px; font-weight: 700;">MentiSphere</span>
+          <div style="display: flex; gap: 16px;">
+            <span style="font-family: 'Inter', sans-serif; font-size: 11px; color: #c4a35a;">Browse</span>
+            <span style="font-family: 'Inter', sans-serif; font-size: 11px; color: #8aab98;">Contribute</span>
+            <span style="font-family: 'Inter', sans-serif; font-size: 11px; color: #8aab98;">About</span>
+          </div>
+        </div>
+        <!-- Page content -->
+        <div style="padding: 28px 24px 16px;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+            <div style="width: 6px; height: 6px; background: #c4a35a; border-radius: 50%;"></div>
+            <span style="font-family: 'Inter', sans-serif; font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: #6b9b7d;">Agent</span>
+          </div>
+          <div style="font-family: 'Lora', serif; font-size: 24px; color: #1b2a21; font-weight: 700; line-height: 1.25; margin-bottom: 6px;">Clinical Pharmacology</div>
+          <div style="font-family: 'Lora', serif; font-size: 13px; color: #5e7a6a; font-style: italic; margin-bottom: 16px;">Drug interactions, dosing, mechanisms of action</div>
+          <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+            <span style="font-family: 'Inter', sans-serif; font-size: 10px; background: #e8ebe4; color: #2d5a3f; padding: 3px 10px; border-radius: 12px;">Featured</span>
+            <span style="font-family: 'Inter', sans-serif; font-size: 10px; background: #e8ebe4; color: #2d5a3f; padding: 3px 10px; border-radius: 12px;">42 edits</span>
+          </div>
+          <div style="border-left: 2px solid #c4a35a; padding-left: 14px;">
+            <div style="font-family: 'Inter', sans-serif; font-size: 12px; color: #3a4a3e; line-height: 1.7;">This agent draws from peer-reviewed research and FDA guidelines to explain pharmaceutical concepts in accessible language.</div>
+          </div>
+        </div>
+        <!-- Chat area -->
+        <div style="margin: 0 24px 20px; border: 1px solid #e0dbd0; border-radius: 8px; padding: 14px; background: #faf8f4;">
+          <div style="font-family: 'Lora', serif; font-size: 13px; color: #1b2a21; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid #e5e0d5;">Conversation</div>
+          <div style="background: #f4f0e8; padding: 10px 14px; border-radius: 6px; margin-bottom: 8px; border-left: 2px solid #6b9b7d;">
+            <div style="font-family: 'Inter', sans-serif; font-size: 11px; color: #3a4a3e; line-height: 1.6;">What are the risks of combining SSRIs with MAOIs?</div>
+          </div>
+          <div style="padding: 10px 14px;">
+            <div style="font-family: 'Inter', sans-serif; font-size: 11px; color: #2d5a3f; line-height: 1.6;">Combining SSRIs with MAOIs carries a serious risk of serotonin syndrome...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Structured Garden</h3>
+      <p>Clean structure with organic accents. Dark nav, parchment body, gold left-border quotes, pill badges, subtle card borders. Professional but warm. The sweet spot between A and B — structured backbone, living details.</p>
+    </div>
+  </div>
+
+</div>

@@ -9,14 +9,16 @@ interface Props {
 }
 
 export function MessageList({ messages, isStreaming }: Props) {
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (listRef.current) {
+      listRef.current.scrollTop = listRef.current.scrollHeight;
+    }
   }, [messages, isStreaming]);
 
   return (
-    <div className="ms-message-list">
+    <div className="ms-message-list" ref={listRef}>
       {messages.length === 0 && (
         <div className="ms-empty">Ask this agent anything.</div>
       )}
@@ -24,7 +26,6 @@ export function MessageList({ messages, isStreaming }: Props) {
         <ChatMessage key={msg.id} message={msg} />
       ))}
       {isStreaming && <StreamingIndicator />}
-      <div ref={bottomRef} />
     </div>
   );
 }

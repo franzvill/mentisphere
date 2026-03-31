@@ -1,0 +1,6 @@
+{"type":"server-started","port":56272,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:56272","screen_dir":"/Users/francescovillano/Projects/mentisphere/.superpowers/brainstorm/70567-1774894029"}
+{"type":"screen-added","file":"/Users/francescovillano/Projects/mentisphere/.superpowers/brainstorm/70567-1774894029/chat-layout.html"}
+{"type":"screen-added","file":"/Users/francescovillano/Projects/mentisphere/.superpowers/brainstorm/70567-1774894029/waiting.html"}
+{"type":"screen-added","file":"/Users/francescovillano/Projects/mentisphere/.superpowers/brainstorm/70567-1774894029/architecture.html"}
+{"type":"screen-added","file":"/Users/francescovillano/Projects/mentisphere/.superpowers/brainstorm/70567-1774894029/waiting-2.html"}
+{"type":"server-stopped","reason":"idle timeout"}

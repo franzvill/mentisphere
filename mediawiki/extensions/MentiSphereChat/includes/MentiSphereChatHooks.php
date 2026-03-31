@@ -10,7 +10,7 @@ class MentiSphereChatHooks {
 		if ( $title->getNamespace() === NS_AGENT ) {
 			$links['namespaces']['chat'] = [
 				'text' => wfMessage( 'mentispherechat-tab' )->text(),
-				'href' => $title->getLocalURL() . '#mentisphere-chat',
+				'href' => $title->getLocalURL(),
 				'class' => '',
 			];
 		}

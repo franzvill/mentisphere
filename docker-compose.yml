@@ -44,6 +44,7 @@ services:
       - ./mediawiki/extensions/DynamicPageList3:/var/www/html/extensions/DynamicPageList3
       - ./mediawiki/extensions/Popups:/var/www/html/extensions/Popups
       - ./mediawiki/extensions/TemplateStyles:/var/www/html/extensions/TemplateStyles
+      - ./mediawiki/Common.css:/var/www/html/Common.css:ro
       - ./mediawiki/logo-icon.png:/var/www/html/resources/assets/mentisphere-logo-icon.png:ro
       - ./mediawiki/logo-1x.png:/var/www/html/resources/assets/mentisphere-logo-1x.png:ro
       - ./mediawiki/logo-2x.png:/var/www/html/resources/assets/mentisphere-logo-2x.png:ro

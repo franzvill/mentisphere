@@ -1,131 +1,286 @@
-/* MentiSphere Global Styles */
+/* MentiSphere — Structured Garden Design System */
+/* Overrides Citizen skin tokens for deep integration */
 
-/* ── Typography ── */
+/* ── MentiSphere Tokens ── */
+:root {
+    --forest-900: #1b2a21;
+    --forest-700: #2d5a3f;
+    --forest-500: #6b9b7d;
+    --forest-300: #a8c5b0;
+    --forest-100: #e8ebe4;
+    --gold: #c4a35a;
+    --gold-light: #d4b86a;
+    --parchment: #f4f0e8;
+    --parchment-light: #faf8f4;
+    --ink: #1a1a2e;
+    --ink-muted: #5e6e64;
+    --border: #e0dbd0;
+    --border-light: #ede9e0;
+    --error: #9b3c3c;
+}
+
+/* ── Override Citizen Design Tokens ── */
+:root {
+    /* Surface colors → parchment */
+    --color-surface-0: #faf8f4 !important;
+    --color-surface-1: #f4f0e8 !important;
+    --color-surface-2: #ede9e0 !important;
+    --color-surface-3: #e8ebe4 !important;
+    --color-surface-4: #e0dbd0 !important;
+
+    /* Text colors */
+    --color-base: #1a1a2e !important;
+    --color-base--emphasized: #1b2a21 !important;
+    --color-base--subtle: #5e6e64 !important;
+
+    /* Primary / accent → forest green */
+    --color-primary: #2d5a3f !important;
+    --color-primary--hover: #1b2a21 !important;
+    --color-primary--active: #1b2a21 !important;
+
+    /* Links */
+    --color-link: #2d5a3f !important;
+    --color-link--visited: #6b9b7d !important;
+
+    /* Fonts → Lora + Inter */
+    --font-family-base: 'Inter', system-ui, sans-serif !important;
+    --font-family-serif: 'Lora', Georgia, serif !important;
+    --font-family-monospace: 'Roboto Mono', ui-monospace, monospace !important;
+
+    /* Icons → make them visible */
+    --background-color-icon: rgba(255, 255, 255, 0.7) !important;
+    --background-color-icon--hover: rgba(255, 255, 255, 1) !important;
+
+    /* Borders */
+    --border-color-base: #e0dbd0 !important;
+    --border-color-subtle: #ede9e0 !important;
+}
+
+/* ══════════════════════════════════════
+   CITIZEN HEADER / SIDEBAR
+   ══════════════════════════════════════ */
+
+.citizen-header {
+    background: var(--forest-900) !important;
+}
+
+/* All icons in the sidebar → light colored */
+.citizen-header .citizen-ui-icon,
+.citizen-header .cdx-icon,
+.citizen-header svg,
+.citizen-header .citizen-cdx-button {
+    color: var(--parchment) !important;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.citizen-header .citizen-ui-icon:hover,
+.citizen-header .cdx-icon:hover,
+.citizen-header .citizen-cdx-button:hover {
+    opacity: 1;
+}
+
+/* Sidebar hover/active backgrounds — subtle, not jarring */
+.citizen-header a:hover,
+.citizen-header button:hover,
+.citizen-header .citizen-cdx-button:hover,
+.citizen-header details summary:hover {
+    background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.citizen-header a:active,
+.citizen-header button:active {
+    background-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+/* Logo — hide logo image, show only home icon */
+.citizen-header__logo a {
+    font-family: 'Lora', Georgia, serif !important;
+    color: var(--parchment) !important;
+}
+
+.citizen-header__logo .mw-logo-icon {
+    display: none !important;
+}
+
+/* Search dropdown */
+.citizen-search__card,
+.citizen-menu__card {
+    background: var(--parchment-light) !important;
+    border-color: var(--border) !important;
+}
+
+/* Drawer / hamburger menu */
+.citizen-drawer__card {
+    background: var(--parchment-light) !important;
+}
+
+/* ══════════════════════════════════════
+   GLOBAL TYPOGRAPHY
+   ══════════════════════════════════════ */
+
+body,
 .mw-body-content {
-    font-size: 15px;
-    line-height: 1.7;
-    color: #1a1a2e;
+    font-family: 'Inter', system-ui, sans-serif !important;
+    font-size: 15px !important;
+    line-height: 1.7 !important;
+    color: var(--ink) !important;
 }
 
-.mw-body-content h2 {
-    color: #1a237e;
-    border-bottom: 2px solid #e8eaf6;
-    padding-bottom: 8px;
+h1, h2, h3, h4, h5, h6,
+.mw-body-content h1,
+.mw-body-content h2,
+.mw-body-content h3,
+.mw-body-content h4,
+.mw-body-content h5,
+.mw-body-content h6,
+.citizen-section-heading h2 {
+    font-family: 'Lora', Georgia, serif !important;
+    color: var(--forest-900) !important;
 }
 
-/* ── Agent Infobox ── */
-.agent-infobox {
-    border: none !important;
-    border-radius: 12px !important;
-    padding: 20px 24px !important;
-    margin-bottom: 24px !important;
-    background: linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%) !important;
-    box-shadow: 0 2px 12px rgba(26, 35, 126, 0.08) !important;
-    position: relative;
-    overflow: hidden;
+.mw-body-content h1,
+.citizen-body h1 { font-size: 28px !important; font-weight: 700 !important; line-height: 1.25 !important; }
+.mw-body-content h2,
+.citizen-section-heading h2 { font-size: 22px !important; font-weight: 700 !important; line-height: 1.3 !important; border-bottom: none !important; padding-bottom: 0 !important; }
+.mw-body-content h3 { font-size: 18px !important; font-weight: 600 !important; line-height: 1.35 !important; }
+.mw-body-content h4 { font-size: 16px !important; font-weight: 600 !important; line-height: 1.4 !important; }
+.mw-body-content h5 { font-size: 15px !important; font-weight: 600 !important; line-height: 1.4 !important; }
+.mw-body-content h6 { font-size: 14px !important; font-weight: 600 !important; line-height: 1.4 !important; }
+
+/* Page title gold underline */
+.mw-first-heading,
+.citizen-body-header h1 {
+    font-family: 'Lora', Georgia, serif !important;
+    color: var(--forest-900) !important;
 }
 
-.agent-infobox::before {
+.mw-first-heading::after {
     content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, #1a237e 0%, #00897b 100%);
+    display: block;
+    width: 40px;
+    height: 2px;
+    background: var(--gold);
+    margin-top: 8px;
 }
 
-.agent-infobox h2 {
-    border: none !important;
-    color: #1a237e !important;
-    font-size: 1.4em !important;
-    margin: 0 !important;
-    padding: 0 !important;
+/* ══════════════════════════════════════
+   LINKS
+   ══════════════════════════════════════ */
+
+.mw-body-content a:not(.mw-ui-button):not(.cdx-button) {
+    color: var(--forest-700) !important;
+    text-decoration: none;
+    transition: color 0.2s;
 }
 
-/* ── Knowledge Infobox ── */
-.knowledge-infobox {
-    border: none !important;
-    border-radius: 12px !important;
-    padding: 20px 24px !important;
-    margin-bottom: 24px !important;
-    background: linear-gradient(135deg, #f1f8e9 0%, #e8f5e9 100%) !important;
-    box-shadow: 0 2px 12px rgba(0, 137, 123, 0.08) !important;
-    position: relative;
-    overflow: hidden;
+.mw-body-content a:not(.mw-ui-button):not(.cdx-button):hover {
+    color: var(--forest-900) !important;
+    text-decoration: underline;
 }
 
-.knowledge-infobox::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, #00897b 0%, #4caf50 100%);
+.mw-body-content a:not(.mw-ui-button):not(.cdx-button):visited {
+    color: var(--forest-500) !important;
 }
 
-.knowledge-infobox h2 {
-    border: none !important;
-    color: #00695c !important;
-    font-size: 1.4em !important;
-    margin: 0 !important;
-    padding: 0 !important;
+.mw-body-content a:focus-visible {
+    outline: 2px solid var(--gold) !important;
+    outline-offset: 2px;
+    border-radius: 2px;
 }
 
-/* ── Skill Infobox ── */
+/* TOC links */
+.citizen-toc a {
+    color: var(--forest-700) !important;
+}
+
+.citizen-toc a:hover {
+    color: var(--forest-900) !important;
+}
+
+.citizen-toc .citizen-toc__link--active {
+    color: var(--forest-900) !important;
+    border-color: var(--gold) !important;
+}
+
+/* ══════════════════════════════════════
+   INFOBOXES (unified)
+   ══════════════════════════════════════ */
+
+.agent-infobox,
+.knowledge-infobox,
 .skill-infobox {
-    border: none !important;
-    border-radius: 12px !important;
+    border: 1px solid var(--border) !important;
+    border-left: 3px solid var(--gold) !important;
+    border-radius: 8px !important;
     padding: 20px 24px !important;
     margin-bottom: 24px !important;
-    background: linear-gradient(135deg, #e3f2fd 0%, #e1f5fe 100%) !important;
-    box-shadow: 0 2px 12px rgba(33, 150, 243, 0.08) !important;
+    background: var(--parchment) !important;
+    box-shadow: none !important;
     position: relative;
     overflow: hidden;
 }
 
+.agent-infobox::before,
+.knowledge-infobox::before,
 .skill-infobox::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, #1565c0 0%, #2196f3 100%);
+    display: none !important;
 }
 
+.agent-infobox h2,
+.knowledge-infobox h2,
 .skill-infobox h2 {
     border: none !important;
-    color: #1565c0 !important;
-    font-size: 1.4em !important;
-    margin: 0 !important;
+    color: var(--forest-900) !important;
+    font-family: 'Lora', Georgia, serif !important;
+    font-size: 20px !important;
+    font-weight: 700 !important;
+    line-height: 1.3 !important;
+    margin: 0 0 4px !important;
     padding: 0 !important;
+}
+
+.agent-infobox p:first-of-type,
+.knowledge-infobox p:first-of-type,
+.skill-infobox p:first-of-type {
+    font-family: 'Lora', Georgia, serif !important;
+    font-style: italic;
+    color: var(--forest-500) !important;
+    font-size: 13px;
 }
 
 /* ── Maturity Badges ── */
 .agent-infobox span[style*="border-radius"],
 .knowledge-infobox span[style*="border-radius"],
 .skill-infobox span[style*="border-radius"] {
+    font-family: 'Inter', system-ui, sans-serif !important;
     font-weight: 600 !important;
     letter-spacing: 0.5px !important;
-    font-size: 0.75em !important;
-    padding: 4px 12px !important;
-    border-radius: 20px !important;
+    font-size: 10px !important;
+    padding: 3px 10px !important;
+    border-radius: 12px !important;
     text-transform: uppercase !important;
+    background: var(--forest-100) !important;
+    color: var(--forest-700) !important;
+    border: none !important;
 }
 
 /* ── Limitations Warning Box ── */
-.agent-infobox div[style*="fff3e0"] {
-    background: #fff8e1 !important;
-    border-left: 4px solid #ff8f00 !important;
-    border-radius: 0 8px 8px 0 !important;
+.agent-infobox div[style*="fff3e0"],
+.agent-infobox div[style*="fff8e1"] {
+    background: var(--parchment) !important;
+    border-left: 3px solid var(--gold) !important;
+    border-radius: 0 6px 6px 0 !important;
     padding: 12px 16px !important;
     margin-top: 16px !important;
     font-size: 0.9em;
+    color: var(--ink);
 }
 
-/* ── Category Tags ── */
+/* ══════════════════════════════════════
+   CATEGORY TAGS
+   ══════════════════════════════════════ */
+
 #catlinks {
     border: none !important;
     margin-top: 24px !important;
@@ -133,45 +288,172 @@
 
 #catlinks a {
     display: inline-block;
-    background: #f5f5f5;
-    color: #424242;
-    padding: 4px 12px;
-    border-radius: 16px;
+    background: var(--forest-100) !important;
+    color: var(--forest-700) !important;
+    padding: 3px 10px;
+    border-radius: 12px;
     margin: 2px 4px;
-    font-size: 0.85em;
-    text-decoration: none;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    text-decoration: none !important;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
     transition: all 0.2s;
 }
 
 #catlinks a:hover {
-    background: #1a237e;
-    color: white;
+    background: var(--forest-700) !important;
+    color: var(--parchment) !important;
 }
 
-/* ── Main Page Action Cards ── */
-.mw-body-content div[style*="display: flex"][style*="gap"] > div {
-    border-radius: 12px !important;
-    padding: 24px !important;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06) !important;
-    transition: transform 0.2s, box-shadow 0.2s;
-    border: 1px solid rgba(0,0,0,0.06);
+/* ══════════════════════════════════════
+   MAIN PAGE
+   ══════════════════════════════════════ */
+
+.ms-hero {
+    text-align: center;
+    padding: 48px 0 24px;
+    border-bottom: 1px solid var(--border-light);
+    margin-bottom: 8px;
 }
 
-.mw-body-content div[style*="display: flex"][style*="gap"] > div:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(0,0,0,0.1) !important;
+.ms-hero-title {
+    font-family: 'Lora', Georgia, serif !important;
+    font-size: 42px !important;
+    font-weight: 700 !important;
+    color: var(--forest-900) !important;
+    letter-spacing: -0.5px;
 }
 
-.mw-body-content div[style*="display: flex"][style*="gap"] > div a {
-    font-size: 1.1em;
+.ms-hero-title::after {
+    content: '';
+    display: block;
+    width: 48px;
+    height: 2px;
+    background: var(--gold);
+    margin: 14px auto 0;
+}
+
+.ms-hero-subtitle {
+    font-family: 'Inter', system-ui, sans-serif !important;
+    font-size: 15px;
+    color: var(--ink-muted);
+    margin-top: 6px;
+}
+
+.ms-hero-tagline {
+    font-family: 'Lora', Georgia, serif !important;
+    font-style: italic;
+    font-size: 17px;
+    color: var(--forest-500);
+    margin-top: 6px;
+}
+
+/* Action cards */
+.ms-action-cards {
+    display: flex;
+    gap: 16px;
+    margin: 28px 0;
+}
+
+.ms-action-card {
+    flex: 1;
+    padding: 28px 20px;
+    background: var(--parchment) !important;
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--gold) !important;
+    border-radius: 8px;
+    text-align: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.ms-action-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(27, 42, 33, 0.15);
+    border-top-color: var(--forest-700) !important;
+}
+
+.ms-action-card:hover .ms-action-card-icon {
+    transform: scale(1.1);
+    transition: transform 0.2s ease;
+}
+
+.ms-action-card-icon {
+    font-size: 3em;
+    margin-bottom: 12px;
+    line-height: 1;
+    filter: grayscale(20%);
+}
+
+.ms-action-card-title {
+    font-family: 'Lora', Georgia, serif !important;
+    font-size: 20px !important;
+    font-weight: 700;
+    color: var(--forest-900);
+    margin-bottom: 6px;
+}
+
+.ms-action-card-desc {
+    font-family: 'Inter', system-ui, sans-serif;
+    color: var(--ink-muted);
+    font-size: 13px;
+    margin-top: 8px;
+}
+
+.ms-action-card a {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 14px;
     font-weight: 600;
 }
 
-/* ── Content Lists (DPL results) ── */
+/* How It Works Steps */
+.ms-steps {
+    display: flex;
+    gap: 20px;
+    margin: 20px 0;
+}
+
+.ms-step {
+    flex: 1;
+    text-align: center;
+    background: var(--parchment) !important;
+    border: 1px solid var(--border);
+    padding: 24px 16px;
+    border-radius: 8px;
+}
+
+.ms-step-number {
+    font-family: 'Lora', Georgia, serif !important;
+    font-size: 2.4em;
+    font-weight: 700;
+    color: var(--gold);
+    line-height: 1;
+}
+
+.ms-step-title {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 600;
+    color: var(--forest-900);
+    font-size: 15px;
+    margin-top: 8px;
+}
+
+.ms-step-desc {
+    font-family: 'Inter', system-ui, sans-serif;
+    color: var(--ink-muted);
+    font-size: 13px;
+    margin-top: 4px;
+}
+
+/* ══════════════════════════════════════
+   CONTENT LISTS
+   ══════════════════════════════════════ */
+
 .mw-body-content > ul > li,
 .mw-body-content > .mw-parser-output > ul > li {
     padding: 6px 0;
-    border-bottom: 1px solid #f5f5f5;
+    border-bottom: 1px solid var(--border-light);
 }
 
 .mw-body-content > ul > li:last-child,
@@ -179,30 +461,89 @@
     border-bottom: none;
 }
 
-/* ── "View all" Links ── */
 .mw-body-content > .mw-parser-output > p > a[href*="Special:AllPages"] {
     display: inline-block;
-    color: #1a237e;
+    font-family: 'Inter', system-ui, sans-serif;
+    color: var(--forest-700) !important;
     font-weight: 500;
+    font-size: 13px;
     padding: 4px 0;
-    text-decoration: none;
-    border-bottom: 2px solid transparent;
+    text-decoration: none !important;
+    border-bottom: 1px solid transparent;
     transition: border-color 0.2s;
 }
 
 .mw-body-content > .mw-parser-output > p > a[href*="Special:AllPages"]:hover {
-    border-bottom-color: #1a237e;
+    border-bottom-color: var(--forest-700);
 }
 
-/* ── Chat Widget Enhancement ── */
-#mentisphere-chat {
-    margin-top: 32px !important;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+/* ══════════════════════════════════════
+   BLOCKQUOTES, CODE, TABLES
+   ══════════════════════════════════════ */
+
+.mw-body-content blockquote {
+    border-left: 3px solid var(--gold) !important;
+    background: var(--parchment) !important;
+    padding: 12px 16px;
+    margin: 16px 0;
+    border-radius: 0 6px 6px 0;
 }
 
-/* ── Page Forms Styling ── */
+.mw-body-content pre {
+    background: var(--forest-900) !important;
+    color: var(--parchment) !important;
+    padding: 16px;
+    border-radius: 6px;
+    font-family: 'Roboto Mono', ui-monospace, monospace;
+    font-size: 13px;
+    overflow-x: auto;
+}
+
+.mw-body-content code {
+    background: var(--forest-100) !important;
+    color: var(--forest-700) !important;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Roboto Mono', ui-monospace, monospace;
+    font-size: 0.9em;
+}
+
+.mw-body-content pre code {
+    background: none !important;
+    color: inherit !important;
+    padding: 0;
+}
+
+.mw-body-content table.wikitable {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.mw-body-content table.wikitable th {
+    background: var(--forest-100) !important;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--forest-700) !important;
+    padding: 10px 14px;
+    border: 1px solid var(--border-light) !important;
+}
+
+.mw-body-content table.wikitable td {
+    padding: 10px 14px;
+    border: 1px solid var(--border-light) !important;
+}
+
+.mw-body-content table.wikitable tr:nth-child(even) td {
+    background: var(--parchment-light);
+}
+
+/* ══════════════════════════════════════
+   PAGE FORMS
+   ══════════════════════════════════════ */
+
 .formtable {
     width: 100%;
     border-collapse: separate;
@@ -212,8 +553,10 @@
 .formtable th {
     text-align: right;
     padding-right: 16px;
-    font-weight: 500;
-    color: #424242;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 600;
+    font-size: 12px;
+    color: var(--forest-700);
     vertical-align: top;
     padding-top: 10px;
     width: 180px;
@@ -224,21 +567,53 @@
 .formtable td select {
     width: 100%;
     padding: 8px 12px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border) !important;
     border-radius: 8px;
+    background: var(--parchment) !important;
+    font-family: 'Inter', system-ui, sans-serif;
     font-size: 14px;
+    color: var(--ink);
     transition: border-color 0.2s;
 }
 
 .formtable td input[type="text"]:focus,
 .formtable td textarea:focus,
 .formtable td select:focus {
-    border-color: #1a237e;
+    border-color: var(--forest-700) !important;
     outline: none;
-    box-shadow: 0 0 0 3px rgba(26, 35, 126, 0.1);
+    box-shadow: 0 0 0 3px rgba(45, 90, 63, 0.1);
 }
 
-/* ── Section Edit Icons ── */
+/* ══════════════════════════════════════
+   BUTTONS
+   ══════════════════════════════════════ */
+
+.mw-ui-button.mw-ui-progressive,
+.cdx-button--action-progressive {
+    background: var(--forest-700) !important;
+    color: var(--parchment) !important;
+    border-color: var(--forest-700) !important;
+    border-radius: 6px !important;
+    font-family: 'Inter', system-ui, sans-serif !important;
+    transition: background 0.2s !important;
+}
+
+.mw-ui-button.mw-ui-progressive:hover,
+.cdx-button--action-progressive:hover {
+    background: var(--forest-900) !important;
+    border-color: var(--forest-900) !important;
+}
+
+.mw-ui-button.mw-ui-progressive:focus-visible,
+.cdx-button--action-progressive:focus-visible {
+    outline: 2px solid var(--gold) !important;
+    outline-offset: 2px !important;
+}
+
+/* ══════════════════════════════════════
+   MISC
+   ══════════════════════════════════════ */
+
 .mw-editsection {
     opacity: 0.4;
     transition: opacity 0.2s;
@@ -248,7 +623,74 @@
     opacity: 1;
 }
 
-/* ── Footer Enhancement ── */
+#mentisphere-chat {
+    margin-top: 32px !important;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
 .citizen-footer {
-    border-top: 2px solid #e8eaf6;
+    border-top: 1px solid var(--border) !important;
+}
+
+/* Citizen section indicator → gold */
+.citizen-section-indicator {
+    border-color: var(--gold) !important;
+}
+
+/* Section collapse toggle */
+.citizen-section-heading .indicator {
+    color: var(--forest-500) !important;
+}
+
+/* ══════════════════════════════════════
+   CITIZEN BOTTOM TOOLBAR & BUTTONS
+   ══════════════════════════════════════ */
+
+/* Bottom page actions bar */
+.citizen-page-actions a,
+.citizen-page-actions button,
+.citizen-footer-actions a,
+.citizen-footer-actions button {
+    color: var(--forest-700) !important;
+}
+
+/* Progressive (Edit) buttons — Citizen uses cdx tokens */
+.cdx-button--weight-primary.cdx-button--action-progressive,
+[class*="cdx-button"][class*="progressive"] {
+    background-color: var(--forest-700) !important;
+    color: var(--parchment) !important;
+    border-color: var(--forest-700) !important;
+}
+
+.cdx-button--weight-primary.cdx-button--action-progressive:hover,
+[class*="cdx-button"][class*="progressive"]:hover {
+    background-color: var(--forest-900) !important;
+    border-color: var(--forest-900) !important;
+}
+
+/* Quiet buttons (View history, Discussion, etc.) */
+.cdx-button--weight-quiet {
+    color: var(--forest-700) !important;
+}
+
+.cdx-button--weight-quiet:hover {
+    background-color: var(--forest-100) !important;
+}
+
+/* TOC active state → gold */
+.citizen-toc__link--active,
+.citizen-toc .citizen-toc__link--active {
+    color: var(--forest-900) !important;
+    border-left-color: var(--gold) !important;
+}
+
+/* Citizen page header breadcrumb */
+.citizen-body-header-title .mw-page-title-namespace {
+    color: var(--forest-500) !important;
+}
+
+/* "From MentiSphere" tagline */
+#siteSub {
+    color: var(--forest-500) !important;
 }
