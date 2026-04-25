@@ -21,11 +21,17 @@ export default function Chat() {
   const [agentSearchOpen, setAgentSearchOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [llmSettingsOpen, setLlmSettingsOpen] = useState(false);
+  const [llmSettingsReason, setLlmSettingsReason] = useState<string | null>(
+    null
+  );
 
   // Value injected from EmptyState suggestion
   const [pendingPrompt, setPendingPrompt] = useState<string | undefined>(
     undefined
   );
+
+  // Message queued while waiting for the user to configure their LLM key
+  const [queuedMessage, setQueuedMessage] = useState<string | null>(null);
 
   const searchParams = useSearchParams();
 
@@ -88,6 +94,17 @@ export default function Chat() {
     async (text: string) => {
       if (isStreaming) return;
 
+      const llmConfig = getLLMConfig();
+      if (!llmConfig) {
+        // No key configured — queue the message and prompt the user to configure.
+        setQueuedMessage(text);
+        setLlmSettingsReason(
+          "Add an API key to start chatting. It's stored only in this browser — never on our servers."
+        );
+        setLlmSettingsOpen(true);
+        return;
+      }
+
       const userMsg: Message = {
         id: `tmp-user-${Date.now()}`,
         role: "user",
@@ -105,13 +122,12 @@ export default function Chat() {
       setIsStreaming(true);
 
       try {
-        const llmConfig = getLLMConfig();
-        const headers: Record<string, string> = { "Content-Type": "application/json" };
-        if (llmConfig) {
-          headers["X-LLM-Provider"] = llmConfig.provider;
-          headers["X-LLM-Key"] = llmConfig.key;
-          if (llmConfig.model) headers["X-LLM-Model"] = llmConfig.model;
-        }
+        const headers: Record<string, string> = {
+          "Content-Type": "application/json",
+          "X-LLM-Provider": llmConfig.provider,
+          "X-LLM-Key": llmConfig.key,
+        };
+        if (llmConfig.model) headers["X-LLM-Model"] = llmConfig.model;
 
         const res = await fetch("/api/chat", {
           method: "POST",
@@ -189,6 +205,29 @@ export default function Chat() {
                     }
                     return updated;
                   });
+                  break;
+
+                case "error":
+                  setMessages((prev) => {
+                    const updated = [...prev];
+                    const last = updated[updated.length - 1];
+                    if (last && last.role === "assistant") {
+                      last.content =
+                        event.error || "Something went wrong. Please try again.";
+                    }
+                    return updated;
+                  });
+                  // Re-prompt for a key if the server says it's missing.
+                  if (
+                    typeof event.error === "string" &&
+                    /api key|llm settings/i.test(event.error)
+                  ) {
+                    setQueuedMessage(text);
+                    setLlmSettingsReason(
+                      "Add an API key to start chatting. It's stored only in this browser — never on our servers."
+                    );
+                    setLlmSettingsOpen(true);
+                  }
                   break;
               }
             } catch {
@@ -318,7 +357,25 @@ export default function Chat() {
       {/* LLM settings modal */}
       <LLMSettings
         isOpen={llmSettingsOpen}
-        onClose={() => setLlmSettingsOpen(false)}
+        reason={llmSettingsReason}
+        onClose={() => {
+          setLlmSettingsOpen(false);
+          setLlmSettingsReason(null);
+          // If the user queued a message and now has a key, fire it.
+          if (queuedMessage) {
+            const config = getLLMConfig();
+            if (config) {
+              const msg = queuedMessage;
+              setQueuedMessage(null);
+              handleSend(msg);
+            } else {
+              // User dismissed without saving — drop it back into the input
+              // so they don't lose what they typed.
+              setPendingPrompt(queuedMessage);
+              setQueuedMessage(null);
+            }
+          }
+        }}
       />
     </div>
   );

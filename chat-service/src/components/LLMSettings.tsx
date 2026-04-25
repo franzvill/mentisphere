@@ -56,7 +56,15 @@ export function clearLLMConfig() {
   localStorage.removeItem('ms-llm-model');
 }
 
-export default function LLMSettings({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+export default function LLMSettings({
+  isOpen,
+  onClose,
+  reason,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  reason?: string | null;
+}) {
   const [provider, setProvider] = useState('openai');
   const [model, setModel] = useState('gpt-5.4');
   const [key, setKey] = useState('');
@@ -92,10 +100,16 @@ export default function LLMSettings({ isOpen, onClose }: { isOpen: boolean; onCl
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center" onClick={onClose}>
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 p-6" onClick={e => e.stopPropagation()}>
-        <h2 className="text-lg font-semibold mb-4">LLM Settings</h2>
-        <p className="text-sm text-gray-500 mb-4">
-          Your API key is stored only in your browser. It is never saved on our servers.
-        </p>
+        <h2 className="text-lg font-semibold mb-2">LLM Settings</h2>
+        {reason ? (
+          <div className="mb-4 rounded-lg border border-[#1a237e]/20 bg-[#f5f5ff] px-3 py-2 text-sm text-[#1a237e]">
+            {reason}
+          </div>
+        ) : (
+          <p className="text-sm text-gray-500 mb-4">
+            Your API key is stored only in your browser. It is never saved on our servers.
+          </p>
+        )}
 
         <label className="block text-sm font-medium mb-1">Provider</label>
         <select

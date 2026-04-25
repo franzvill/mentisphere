@@ -13,7 +13,7 @@
 	}
 
 	// Cache-bust version (update on each build)
-	var v = '20260330';
+	var v = '20260425';
 
 	// Load chat widget CSS
 	var link = document.createElement( 'link' );

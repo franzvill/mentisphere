@@ -31,9 +31,10 @@ const PROVIDERS = [
 interface Props {
   isOpen: boolean;
   onClose: () => void;
+  reason?: string | null;
 }
 
-export function LLMSettingsWidget({ isOpen, onClose }: Props) {
+export function LLMSettingsWidget({ isOpen, onClose, reason }: Props) {
   const [provider, setProvider] = useState('openai');
   const [model, setModel] = useState('gpt-5.4');
   const [key, setKey] = useState('');
@@ -60,7 +61,11 @@ export function LLMSettingsWidget({ isOpen, onClose }: Props) {
     <div className="ms-settings-overlay" onClick={onClose}>
       <div className="ms-settings-modal" onClick={e => e.stopPropagation()}>
         <div className="ms-settings-title">LLM Settings</div>
-        <div className="ms-settings-note">Your API key is stored only in your browser.</div>
+        {reason ? (
+          <div className="ms-settings-banner">{reason}</div>
+        ) : (
+          <div className="ms-settings-note">Your API key is stored only in your browser.</div>
+        )}
 
         <label className="ms-settings-label">Provider</label>
         <select

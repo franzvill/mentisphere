@@ -214,6 +214,14 @@ $wgCookieSameSite = 'Lax';
 $wgCdnServersNoPurge = [ '172.16.0.0/12', '192.168.0.0/16', '10.0.0.0/8' ];
 $wgUsePrivateIPs = true;
 
+# Permissions — require login to edit or create pages; reading stays public
+$wgGroupPermissions['*']['edit'] = false;
+$wgGroupPermissions['*']['createpage'] = false;
+$wgGroupPermissions['*']['createtalk'] = false;
+$wgGroupPermissions['*']['writeapi'] = false;
+$wgGroupPermissions['user']['edit'] = true;
+$wgGroupPermissions['user']['createpage'] = true;
+
 # MentiSphere Chat Extension
 wfLoadExtension( 'MentiSphereChat' );
 $wgMentiSphereChatServiceUrl = '/chat-api';

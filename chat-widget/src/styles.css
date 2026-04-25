@@ -189,6 +189,11 @@
   font-size: 13px;
   border-top: 1px solid rgba(155, 60, 60, 0.15);
 }
+.ms-error-link {
+  color: var(--error);
+  font-weight: 600;
+  text-decoration: underline;
+}
 
 /* ── Chat Input ── */
 .ms-chat-input {
@@ -294,6 +299,16 @@
   font-size: 12px;
   color: var(--ink-muted, #888);
   margin-bottom: 16px;
+}
+.ms-settings-banner {
+  font-size: 13px;
+  color: #1a237e;
+  background: #f5f5ff;
+  border: 1px solid rgba(26, 35, 126, 0.18);
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  line-height: 1.4;
 }
 .ms-settings-label {
   display: block;

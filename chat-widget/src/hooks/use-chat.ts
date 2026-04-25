@@ -2,10 +2,26 @@ import { useState, useCallback, useRef } from 'react';
 import { createSession, sendMessage as apiSendMessage } from '../lib/api';
 import type { ChatMessage, StreamEvent } from '../types';
 
+export type ChatErrorKind = 'auth' | 'generic';
+export interface ChatError {
+  kind: ChatErrorKind;
+  message: string;
+}
+
+function hasLLMKey(): boolean {
+  try {
+    return !!(localStorage.getItem('ms-llm-provider') && localStorage.getItem('ms-llm-key'));
+  } catch {
+    return false;
+  }
+}
+
 export function useChat(agentPageTitle: string) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<ChatError | null>(null);
+  const [needsLLMKey, setNeedsLLMKey] = useState(false);
+  const [queuedMessage, setQueuedMessage] = useState<string | null>(null);
   const sessionIdRef = useRef<string | null>(null);
 
   const ensureSession = useCallback(async () => {
@@ -17,6 +33,12 @@ export function useChat(agentPageTitle: string) {
   }, [agentPageTitle]);
 
   const sendMessage = useCallback(async (content: string) => {
+    if (!hasLLMKey()) {
+      setQueuedMessage(content);
+      setNeedsLLMKey(true);
+      return;
+    }
+
     setError(null);
     setIsStreaming(true);
 
@@ -66,16 +88,54 @@ export function useChat(agentPageTitle: string) {
               m.id === assistantId ? { ...m, id: data.message_id! } : m
             ));
           } else if (data.type === 'error') {
-            setError(data.error || 'Unknown error');
+            const errMsg = data.error || 'Unknown error';
+            // Server-side "no API key" — re-prompt for key.
+            if (/api key|llm settings/i.test(errMsg)) {
+              setMessages(prev => prev.filter(m => m.id !== userMsg.id && m.id !== assistantId));
+              setQueuedMessage(content);
+              setNeedsLLMKey(true);
+            } else {
+              setError({ kind: 'generic', message: errMsg });
+            }
           }
         }
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Connection failed');
+      const message = err instanceof Error ? err.message : 'Connection failed';
+      // The api layer throws "Failed to create session: 401" / "Failed to send message: 401".
+      const isAuth = /\b401\b|\b403\b/.test(message);
+      // Drop the optimistic bubbles so the error stands alone.
+      setMessages(prev => prev.filter(m => m.id !== userMsg.id && m.id !== assistantId));
+      setError({
+        kind: isAuth ? 'auth' : 'generic',
+        message: isAuth
+          ? 'You need to be signed in to chat with this agent.'
+          : message,
+      });
     } finally {
       setIsStreaming(false);
     }
   }, [ensureSession]);
 
-  return { messages, isStreaming, error, sendMessage };
+  // Called by the UI after the LLM settings modal closes; flushes queued message
+  // if a key is now configured, otherwise drops the queue.
+  const onLLMSettingsClosed = useCallback(() => {
+    setNeedsLLMKey(false);
+    if (queuedMessage && hasLLMKey()) {
+      const msg = queuedMessage;
+      setQueuedMessage(null);
+      sendMessage(msg);
+    } else if (!hasLLMKey()) {
+      setQueuedMessage(null);
+    }
+  }, [queuedMessage, sendMessage]);
+
+  return {
+    messages,
+    isStreaming,
+    error,
+    needsLLMKey,
+    sendMessage,
+    onLLMSettingsClosed,
+  };
 }
