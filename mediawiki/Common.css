@@ -446,6 +446,18 @@ h1, h2, h3, h4, h5, h6,
     margin-top: 4px;
 }
 
+@media (max-width: 768px) {
+    .ms-action-cards,
+    .ms-steps {
+        flex-direction: column;
+    }
+
+    .ms-action-card,
+    .ms-step {
+        width: 100%;
+    }
+}
+
 /* ══════════════════════════════════════
    CONTENT LISTS
    ══════════════════════════════════════ */
