@@ -1,0 +1,92 @@
+name: Deploy to production
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: chat-widget/package-lock.json
+
+      - name: Build chat-widget
+        run: |
+          cd chat-widget
+          npm ci --no-audit --no-fund
+          npx vite build
+
+      - name: Setup SSH
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Rsync to server
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+        run: |
+          rsync -az --delete-after \
+            -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
+            --exclude='.git/' \
+            --exclude='.github/' \
+            --exclude='node_modules/' \
+            --exclude='.env' \
+            --exclude='*.local' \
+            --exclude='.DS_Store' \
+            --exclude='chat-service/.next/' \
+            --exclude='mediawiki/cache/' \
+            --exclude='mediawiki/images/' \
+            --exclude='mediawiki/LocalSettings.php' \
+            ./ "root@${DEPLOY_HOST}:/opt/mentisphere/"
+
+      - name: Rebuild + restart on server
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+        run: |
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no "root@${DEPLOY_HOST}" bash <<'REMOTE'
+          set -e
+          cd /opt/mentisphere
+
+          # Bump cache-bust version on chat-loader so the new widget asset is fetched
+          STAMP=$(date +%Y%m%d%H%M%S)
+          sed -i "s/var v = '[0-9]*';/var v = '${STAMP}';/" \
+            mediawiki/extensions/MentiSphereChat/modules/ext.mentisphere.chat/chat-loader.js
+
+          # Rebuild chat-service image (no-op if no Dockerfile/source changes)
+          docker compose build chat-service
+
+          # Bring up any new/updated containers; doesn't touch unchanged ones
+          docker compose up -d
+
+          # Reload nginx (picks up nginx.conf changes if any)
+          docker exec mentisphere-nginx-1 nginx -s reload || true
+
+          # Restart MW so chat-loader cache-bust is rendered into pages
+          docker compose restart mediawiki
+
+          echo "Deploy stamp: ${STAMP}"
+          REMOTE
+
+      - name: Smoke test
+        run: |
+          sleep 5
+          curl -sw "Main: HTTP %{http_code}\n" -o /dev/null https://mentisphere.wiki/wiki/Main_Page
+          curl -sw "Chat-API (401 expected): HTTP %{http_code}\n" -o /dev/null -X POST https://mentisphere.wiki/chat-api/sessions
