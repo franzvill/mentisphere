@@ -37,7 +37,7 @@ $wgServer = "http://localhost";
 $wgResourceBasePath = $wgScriptPath;
 
 # Bump to invalidate ResourceLoader cache after asset changes
-$wgCacheEpoch = '20260331140000';
+$wgCacheEpoch = '20260509140000';
 
 ## The URL paths to the logo.  Make sure you change this from the default,
 ## or else you'll overwrite your logo when you upgrade!
@@ -249,4 +249,88 @@ $wgHooks['BeforePageDisplay'][] = function ( $out ) {
 	if ( file_exists( $cssFile ) ) {
 		$out->addInlineStyle( file_get_contents( $cssFile ) );
 	}
+
+	# Google Analytics 4 with Google Consent Mode v2 (denied by default until user accepts)
+	$out->addHeadItem( 'cookieconsent-css',
+		'<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orestbida/cookieconsent@3.1.0/dist/cookieconsent.css">'
+	);
+	$out->addHeadItem( 'gtag', <<<'HTML'
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-E7K3YV5K2Y"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('consent', 'default', {
+    ad_storage: 'denied',
+    ad_user_data: 'denied',
+    ad_personalization: 'denied',
+    analytics_storage: 'denied',
+    wait_for_update: 500
+});
+gtag('js', new Date());
+gtag('config', 'G-E7K3YV5K2Y');
+</script>
+HTML
+	);
+	$out->addHeadItem( 'cookieconsent-init', <<<'HTML'
+<script type="module">
+import * as CookieConsent from 'https://cdn.jsdelivr.net/gh/orestbida/cookieconsent@3.1.0/dist/cookieconsent.esm.js';
+window.CookieConsent = CookieConsent;
+
+function updateGtagConsent() {
+    gtag('consent', 'update', {
+        analytics_storage: CookieConsent.acceptedCategory('analytics') ? 'granted' : 'denied'
+    });
+}
+
+CookieConsent.run({
+    onFirstConsent: updateGtagConsent,
+    onConsent: updateGtagConsent,
+    onChange: updateGtagConsent,
+    guiOptions: {
+        consentModal: { layout: 'box', position: 'bottom right' },
+        preferencesModal: { layout: 'box' }
+    },
+    categories: {
+        necessary: { enabled: true, readOnly: true },
+        analytics: {
+            autoClear: { cookies: [{ name: /^_ga/ }, { name: '_gid' }] }
+        }
+    },
+    language: {
+        default: 'en',
+        translations: {
+            en: {
+                consentModal: {
+                    title: 'Cookies on MentiSphere',
+                    description: 'We use cookies to understand how visitors use the site. Essential cookies (login sessions) are always on. Analytics cookies are optional.',
+                    acceptAllBtn: 'Accept all',
+                    acceptNecessaryBtn: 'Reject all',
+                    showPreferencesBtn: 'Manage preferences'
+                },
+                preferencesModal: {
+                    title: 'Cookie preferences',
+                    acceptAllBtn: 'Accept all',
+                    acceptNecessaryBtn: 'Reject all',
+                    savePreferencesBtn: 'Save preferences',
+                    closeIconLabel: 'Close',
+                    sections: [
+                        {
+                            title: 'Strictly necessary',
+                            description: 'Required for the site to function (login sessions, CSRF protection).',
+                            linkedCategory: 'necessary'
+                        },
+                        {
+                            title: 'Analytics',
+                            description: 'Google Analytics helps us understand how visitors use MentiSphere. Cookies: _ga, _ga_*.',
+                            linkedCategory: 'analytics'
+                        }
+                    ]
+                }
+            }
+        }
+    }
+});
+</script>
+HTML
+	);
 };
