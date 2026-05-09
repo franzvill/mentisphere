@@ -50,7 +50,11 @@ export function ChatWidget({ agentPageTitle, agentName }: Props) {
             <>
               {' '}
               <a href="/wiki/Special:UserLogin" className="ms-error-link">
-                Log in →
+                Log in
+              </a>
+              {' or '}
+              <a href="/wiki/Special:CreateAccount" className="ms-error-link">
+                sign up →
               </a>
             </>
           )}

@@ -33,6 +33,9 @@ export default function Chat() {
   // Message queued while waiting for the user to configure their LLM key
   const [queuedMessage, setQueuedMessage] = useState<string | null>(null);
 
+  // True when the wiki session is missing/expired — render sign-in prompt instead of chat UI.
+  const [isUnauthed, setIsUnauthed] = useState(false);
+
   const searchParams = useSearchParams();
 
   // Fetch conversation list on mount + auto-send ?q= param
@@ -50,6 +53,10 @@ export default function Chat() {
       const res = await fetch("/api/conversations", {
         credentials: "include",
       });
+      if (res.status === 401) {
+        setIsUnauthed(true);
+        return;
+      }
       if (!res.ok) return;
       const data = await res.json();
       setConversations(data.conversations ?? []);
@@ -140,6 +147,11 @@ export default function Chat() {
           }),
         });
 
+        if (res.status === 401) {
+          setIsUnauthed(true);
+          setIsStreaming(false);
+          return;
+        }
         if (!res.ok || !res.body) {
           setIsStreaming(false);
           return;
@@ -250,6 +262,10 @@ export default function Chat() {
   }, []);
 
   const showEmptyState = messages.length === 0 && !isStreaming;
+
+  if (isUnauthed) {
+    return <SignInPrompt />;
+  }
 
   return (
     <div className="flex h-full bg-white">
@@ -377,6 +393,39 @@ export default function Chat() {
           }
         }}
       />
+    </div>
+  );
+}
+
+function SignInPrompt() {
+  return (
+    <div className="flex h-full items-center justify-center bg-white px-6">
+      <div className="w-full max-w-md text-center">
+        <h1 className="text-2xl font-semibold text-[#1a237e]">
+          Sign in to chat
+        </h1>
+        <p className="mt-3 text-sm leading-relaxed text-gray-600">
+          MentiSphere chats are tied to a wiki account so your conversations
+          are saved and you can contribute back to agents you use.
+        </p>
+        <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-center">
+          <a
+            href="/wiki/Special:UserLogin?returnto=Main_Page"
+            className="rounded-lg bg-[#1a237e] px-5 py-2.5 text-sm font-medium text-white transition hover:bg-[#283593]"
+          >
+            Log in
+          </a>
+          <a
+            href="/wiki/Special:CreateAccount?returnto=Main_Page"
+            className="rounded-lg border border-[#1a237e] px-5 py-2.5 text-sm font-medium text-[#1a237e] transition hover:bg-[#1a237e]/5"
+          >
+            Create account
+          </a>
+        </div>
+        <p className="mt-6 text-xs text-gray-400">
+          Account creation is free.
+        </p>
+      </div>
     </div>
   );
 }

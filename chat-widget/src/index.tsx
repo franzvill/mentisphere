@@ -9,9 +9,10 @@ function init() {
   const chatServiceUrl = (window as any).mw?.config?.get('wgMentiSphereChatServiceUrl') || '/chat-api';
   const agentPageTitle = (window as any).mw?.config?.get('wgMentiSphereAgentPage') || '';
   const agentName = agentPageTitle.replace(/^Agent:/, '').replace(/_/g, ' ');
+  const isAuthed = ((window as any).mw?.config?.get('wgUserId') ?? 0) > 0;
 
   const root = createRoot(container);
-  root.render(<App chatServiceUrl={chatServiceUrl} agentPageTitle={agentPageTitle} agentName={agentName} />);
+  root.render(<App chatServiceUrl={chatServiceUrl} agentPageTitle={agentPageTitle} agentName={agentName} isAuthed={isAuthed} />);
 }
 
 if (document.readyState === 'loading') {
