@@ -43,7 +43,11 @@ jobs:
         env:
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
         run: |
-          rsync -az --delete-after \
+          # No --delete: third-party MW skins/extensions live only on the server
+          # (they're not committed to git), so a delete pass would wipe them.
+          # We also exclude server-managed config and the third-party dirs
+          # explicitly — only MentiSphereChat (our custom extension) gets deployed.
+          rsync -az \
             -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
             --exclude='.git/' \
             --exclude='.github/' \
@@ -55,6 +59,17 @@ jobs:
             --exclude='mediawiki/cache/' \
             --exclude='mediawiki/images/' \
             --exclude='mediawiki/LocalSettings.php' \
+            --exclude='docker-compose.yml' \
+            --exclude='docker-compose.override.yml' \
+            --exclude='mediawiki/skins/' \
+            --exclude='mediawiki/extensions/Cargo/' \
+            --exclude='mediawiki/extensions/CirrusSearch/' \
+            --exclude='mediawiki/extensions/DynamicPageList3/' \
+            --exclude='mediawiki/extensions/Elastica/' \
+            --exclude='mediawiki/extensions/PageForms/' \
+            --exclude='mediawiki/extensions/Popups/' \
+            --exclude='mediawiki/extensions/Scribunto/' \
+            --exclude='mediawiki/extensions/TemplateStyles/' \
             ./ "root@${DEPLOY_HOST}:/opt/mentisphere/"
 
       - name: Rebuild + restart on server
