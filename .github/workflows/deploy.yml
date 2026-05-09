@@ -58,8 +58,6 @@ jobs:
             --exclude='chat-service/.next/' \
             --exclude='mediawiki/cache/' \
             --exclude='mediawiki/images/' \
-            --exclude='mediawiki/LocalSettings.php' \
-            --exclude='docker-compose.yml' \
             --exclude='docker-compose.override.yml' \
             --exclude='mediawiki/skins/' \
             --exclude='mediawiki/extensions/Cargo/' \

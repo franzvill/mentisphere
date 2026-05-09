@@ -31,7 +31,8 @@ $wgSitename = "MentiSphere";
 $wgScriptPath = "";
 
 ## The protocol and server name to use in fully-qualified URLs
-$wgServer = "http://localhost";
+## Read from MEDIAWIKI_SERVER env var (set in docker-compose env), with dev fallback.
+$wgServer = getenv( 'MEDIAWIKI_SERVER' ) ?: 'http://localhost';
 
 ## The URL path to static resources (images, scripts, etc.)
 $wgResourceBasePath = $wgScriptPath;
@@ -64,7 +65,7 @@ $wgDBtype = "mysql";
 $wgDBserver = "mariadb";
 $wgDBname = "mentisphere_wiki";
 $wgDBuser = "root";
-$wgDBpassword = "mentisphere_dev_2024";
+$wgDBpassword = getenv( 'MEDIAWIKI_DB_PASSWORD' ) ?: 'mentisphere_dev_2024';
 
 # MySQL specific settings
 $wgDBprefix = "";
@@ -106,14 +107,14 @@ $wgLocaltimezone = "UTC";
 ## be publicly accessible from the web.
 #$wgCacheDirectory = "$IP/cache";
 
-$wgSecretKey = "3eb9b1734a55693b7098be64c021c1d274673bf12fdc9a5e795d038eb400af9a";
+$wgSecretKey = getenv( 'MEDIAWIKI_SECRET_KEY' ) ?: 'mentisphere_dev_secret_key_change_in_production';
 
 # Changing this will log out all existing sessions.
 $wgAuthenticationTokenVersion = "1";
 
 # Site upgrade key. Must be set to a string (default provided) to turn on the
 # web installer while LocalSettings.php is in place
-$wgUpgradeKey = "09a6bbf7f1842f81";
+$wgUpgradeKey = getenv( 'MEDIAWIKI_UPGRADE_KEY' ) ?: '09a6bbf7f1842f81';
 
 ## For attaching licensing metadata to pages, and displaying an
 ## appropriate copyright notice / icon. GNU Free Documentation
