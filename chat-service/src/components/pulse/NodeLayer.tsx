@@ -12,6 +12,8 @@ interface Props {
   size: { w: number; h: number };
   activity: ActivityEvent[];
   activated: { agents: Set<string>; knowledge: Set<string>; selected: string | null };
+  onNodeHover?: (title: string | null) => void;
+  onNodeClick?: (title: string) => void;
 }
 
 const COLORS = {
@@ -20,7 +22,7 @@ const COLORS = {
   skill: 0x9b8cff,
 } as const;
 
-export default function NodeLayer({ layout, size, activated, activity }: Props) {
+export default function NodeLayer({ layout, size, activated, activity, onNodeHover, onNodeClick }: Props) {
   const stageSize = Math.min(size.w, size.h) * 0.9;
 
   // Translate brain-space (0..1) into stage-space (centered).
@@ -52,13 +54,24 @@ export default function NodeLayer({ layout, size, activated, activity }: Props) 
         const alpha = isActive ? 1 : 0.6;
         const pulseTs = pulses.get(n.pageTitle);
 
+        // Hit area is generously sized so small nodes are still hoverable.
+        const hitRadius = Math.max(radius + 6, 10);
+
         return (
           <pixiGraphics
             key={n.pageTitle}
             x={x}
             y={y}
+            eventMode="static"
+            cursor="pointer"
+            onPointerOver={() => onNodeHover?.(n.pageTitle)}
+            onPointerOut={() => onNodeHover?.(null)}
+            onPointerTap={() => onNodeClick?.(n.pageTitle)}
             draw={g => {
               g.clear();
+              // Invisible hit ring — guarantees the graphics' bounding box
+              // covers `hitRadius` even when the visible glyph is small.
+              g.circle(0, 0, hitRadius).fill({ color: 0x000000, alpha: 0.001 });
               // outer halo
               if (isActive) {
                 g.circle(0, 0, radius + 6).fill({ color, alpha: 0.18 });

@@ -22,6 +22,8 @@ export default function BrainCanvas({ layout, activity, activated, travelingDotP
   const ref = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ w: 0, h: 0 });
   const [brainTex, setBrainTex] = useState<Texture | null>(null);
+  const [hoveredTitle, setHoveredTitle] = useState<string | null>(null);
+  const [mouse, setMouse] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
 
   useEffect(() => {
     Assets.load('/brain.png').then((t: Texture) => setBrainTex(t));
@@ -36,8 +38,19 @@ export default function BrainCanvas({ layout, activity, activated, travelingDotP
     return () => ro.disconnect();
   }, []);
 
+  const onClick = (title: string) => {
+    window.open(`/wiki/${encodeURIComponent(title)}`, '_blank', 'noopener,noreferrer');
+  };
+
   return (
-    <div ref={ref} className="absolute inset-0">
+    <div
+      ref={ref}
+      className="absolute inset-0"
+      onMouseMove={e => {
+        const rect = ref.current?.getBoundingClientRect();
+        if (rect) setMouse({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+      }}
+    >
       {size.w > 0 && (
         <Application width={size.w} height={size.h} background={0x05070d} antialias>
           <pixiContainer x={size.w / 2} y={size.h / 2}>
@@ -51,9 +64,31 @@ export default function BrainCanvas({ layout, activity, activated, travelingDotP
               />
             )}
             <EdgeLayer layout={layout} size={size} activated={activated} travelingDotPhase={travelingDotPhase} />
-            <NodeLayer layout={layout} size={size} activity={activity} activated={activated} />
+            <NodeLayer
+              layout={layout}
+              size={size}
+              activity={activity}
+              activated={activated}
+              onNodeHover={setHoveredTitle}
+              onNodeClick={onClick}
+            />
           </pixiContainer>
         </Application>
+      )}
+      {hoveredTitle && (
+        <div
+          className="absolute pointer-events-none px-2 py-1 text-xs text-zinc-100
+                     bg-zinc-900/90 backdrop-blur border border-white/10 rounded
+                     font-mono whitespace-nowrap shadow-lg"
+          style={{
+            left: mouse.x + 14,
+            top: mouse.y + 14,
+            // Avoid covering the right edge — flip to the left of the cursor.
+            transform: mouse.x > size.w - 240 ? 'translateX(-100%) translateX(-28px)' : undefined,
+          }}
+        >
+          {hoveredTitle}
+        </div>
       )}
     </div>
   );
