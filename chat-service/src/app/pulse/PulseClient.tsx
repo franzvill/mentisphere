@@ -24,6 +24,14 @@ export default function PulseClient({ initialLayout }: Props) {
   // Suppress unused-variable warning until Task 25 wires chat events.
   void setActivated;
 
+  // 30fps redraw tick — forces React to re-render so NodeLayer pulse rings animate.
+  // Safe for ~50–100 nodes; switch to useTick if node count grows past 1000.
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setTick(t => t + 1), 33);
+    return () => clearInterval(id);
+  }, []);
+
   // WebGL feature detection — see Task 25.
   useEffect(() => {
     const c = document.createElement('canvas');
