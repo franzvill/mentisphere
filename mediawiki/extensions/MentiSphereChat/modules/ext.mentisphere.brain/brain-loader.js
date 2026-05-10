@@ -8,14 +8,23 @@
 	var v = '20260510';
 
 	// Find or create the container div with the data attribute the widget mounts on.
+	// Position the brain just above the homepage chat input
+	// (`#ms-home-chat`/`.ms-chat-input-wrapper` placeholder in wikitext) so the
+	// composition reads: hero → brain → chat input → action cards.
 	var container = document.querySelector( '[data-mentisphere-brain]' );
 	if ( !container ) {
 		container = document.createElement( 'div' );
 		container.setAttribute( 'data-mentisphere-brain', '' );
 		container.className = 'ms-brain-widget-mount';
-		var content = document.getElementById( 'mw-content-text' );
-		if ( content ) {
-			content.insertBefore( container, content.firstChild );
+		var anchor = document.getElementById( 'ms-home-chat' );
+		if ( anchor && anchor.parentNode ) {
+			anchor.parentNode.insertBefore( container, anchor );
+		} else {
+			// Fallback: prepend to content area if the anchor isn't on this page.
+			var content = document.getElementById( 'mw-content-text' );
+			if ( content ) {
+				content.insertBefore( container, content.firstChild );
+			}
 		}
 	}
 
@@ -52,8 +61,9 @@
 
 			var submit = document.createElement( 'button' );
 			submit.type = 'submit';
-			submit.className = 'ms-home-chat-submit';
-			submit.textContent = 'Ask →';
+			submit.className = 'ms-home-chat-btn';
+			submit.setAttribute( 'aria-label', 'Send' );
+			submit.textContent = '→';
 
 			form.appendChild( input );
 			form.appendChild( submit );
