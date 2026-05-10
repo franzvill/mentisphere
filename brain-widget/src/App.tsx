@@ -6,8 +6,11 @@ import { useEffect, useRef, useState } from 'react';
 import type { PulseLayout, ActivityEvent } from './types';
 import BrainCanvas from './components/BrainCanvas';
 
-const CHAT_SERVICE_URL =
-  (window as any).mw?.config?.get('wgMentiSphereChatServiceUrl') ?? '/chat-api';
+// The pulse API lives at /api/pulse/* on the same origin (chat-service serves
+// /api/* directly in dev; nginx proxies /api/ → chat-service /api/ in prod).
+// Don't use wgMentiSphereChatServiceUrl — that points to /chat-api which is a
+// rewrite of /api, so prefixing it would yield /chat-api/api/... (404).
+const API_BASE = '';
 
 const EMPTY_LAYOUT: PulseLayout = { nodes: [], edges: [], version: '' };
 
@@ -26,7 +29,7 @@ export function App() {
 
   // Fetch layout once on mount
   useEffect(() => {
-    fetch(`${CHAT_SERVICE_URL}/api/pulse/layout`)
+    fetch(`${API_BASE}/api/pulse/layout`)
       .then(r => {
         if (!r.ok) throw new Error(`layout ${r.status}`);
         return r.json() as Promise<PulseLayout>;
@@ -43,7 +46,7 @@ export function App() {
 
   // Subscribe to ambient activity stream
   useEffect(() => {
-    const es = new EventSource(`${CHAT_SERVICE_URL}/api/pulse/stream`);
+    const es = new EventSource(`${API_BASE}/api/pulse/stream`);
     evtRef.current = es;
 
     es.onmessage = e => {
