@@ -16,6 +16,10 @@ WORKDIR /app
 ENV NODE_ENV=production
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
+# Next.js `output: 'standalone'` does NOT include the public/ folder in
+# .next/standalone — copy it explicitly so static assets like
+# /chat-assets/*, /widgets/*, /brain.png are served by the runtime image.
+COPY --from=builder /app/public ./public
 
 EXPOSE 3000
 ENV PORT=3000
