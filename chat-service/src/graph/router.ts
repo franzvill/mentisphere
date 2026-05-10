@@ -73,18 +73,20 @@ async function routeWithLLM(
 export async function routerNode(state: typeof ChatGraphState.State) {
   // If conversation already has an agent, keep it
   if (state.selectedAgent) {
-    return { selectedAgent: state.selectedAgent };
+    return { selectedAgent: state.selectedAgent, topAgentCandidates: [] };
   }
 
   // Semantic search for top-5 matching agents
   const candidates = await findRelevantAgents(state.userMessage, 5);
 
+  const topAgentCandidates = candidates.map(c => ({ title: c.title, similarity: c.similarity }));
+
   if (candidates.length === 0) {
-    return { selectedAgent: null };
+    return { selectedAgent: null, topAgentCandidates: [] };
   }
 
   if (candidates.length === 1) {
-    return { selectedAgent: candidates[0].title };
+    return { selectedAgent: candidates[0].title, topAgentCandidates };
   }
 
   // LLM picks from the short list
@@ -98,7 +100,7 @@ export async function routerNode(state: typeof ChatGraphState.State) {
   );
 
   const valid = candidates.find(a => a.title === picked);
-  return { selectedAgent: valid ? picked : candidates[0].title };
+  return { selectedAgent: valid ? picked : candidates[0].title, topAgentCandidates };
 }
 
 // Export for use by the search API

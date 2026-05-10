@@ -12,4 +12,8 @@ export const ChatGraphState = Annotation.Root({
   llmProvider: Annotation<string | null>({ reducer: (_, b) => b, default: () => null }),
   llmKey: Annotation<string | null>({ reducer: (_, b) => b, default: () => null }),
   llmModel: Annotation<string | null>({ reducer: (_, b) => b, default: () => null }),
+  topAgentCandidates: Annotation<Array<{ title: string; similarity: number }>>({
+    reducer: (_, b) => b,
+    default: () => [],
+  }),
 });
