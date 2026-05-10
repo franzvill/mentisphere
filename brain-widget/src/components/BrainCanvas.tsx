@@ -77,7 +77,7 @@ export default function BrainCanvas({ layout, activity, activated, travelingDotP
       }}
     >
       {size.w > 0 && (
-        <Application width={size.w} height={size.h} background={0x05070d} antialias>
+        <Application width={size.w} height={size.h} backgroundAlpha={0} antialias>
           <pixiContainer x={size.w / 2} y={size.h / 2}>
             {brainTex && (
               <pixiSprite

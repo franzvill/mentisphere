@@ -93,11 +93,6 @@ export function App() {
           travelingDotPhase={0}
         />
       </div>
-      <div className="ms-brain-widget__footer">
-        <a href="/pulse" className="ms-brain-widget__link">
-          Ask the mind &rarr;
-        </a>
-      </div>
     </div>
   );
 }
