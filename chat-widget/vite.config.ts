@@ -13,12 +13,15 @@ export default defineConfig({
     lib: {
       entry: 'src/index.tsx',
       name: 'MentiSphereChat',
-      fileName: () => 'chat-widget.js',
+      // Use a neutral filename — corporate proxies (e.g. Zscaler) block
+      // anything named "chat-widget.js" by URL pattern, even though the
+      // sibling .css file passes. "mentisphere-widget" sidesteps that.
+      fileName: () => 'mentisphere-widget.js',
       formats: ['iife'],
     },
     rollupOptions: {
       output: {
-        assetFileNames: 'chat-widget.[ext]',
+        assetFileNames: 'mentisphere-widget.[ext]',
       },
     },
     cssCodeSplit: false,

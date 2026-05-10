@@ -15,14 +15,14 @@
 	// Cache-bust version (update on each build)
 	var v = '20260425';
 
-	// Load chat widget CSS
+	// Load widget CSS + JS. Filename is `mentisphere-widget` (not `chat-widget`)
+	// because some corporate proxies block URLs containing "chat-widget".
 	var link = document.createElement( 'link' );
 	link.rel = 'stylesheet';
-	link.href = assetsUrl + '/chat-widget.css?v=' + v;
+	link.href = assetsUrl + '/mentisphere-widget.css?v=' + v;
 	document.head.appendChild( link );
 
-	// Load chat widget JS
 	var script = document.createElement( 'script' );
-	script.src = assetsUrl + '/chat-widget.js?v=' + v;
+	script.src = assetsUrl + '/mentisphere-widget.js?v=' + v;
 	document.body.appendChild( script );
 }() );
