@@ -225,12 +225,13 @@ export default function Chat() {
                 case "agent_selected":
                   setSelectedAgent(event.agent);
                   setMessages((prev) => {
-                    const updated = [...prev];
-                    const last = updated[updated.length - 1];
-                    if (last && last.role === "assistant") {
-                      last.agentPageTitle = event.agent;
-                    }
-                    return updated;
+                    if (prev.length === 0) return prev;
+                    const last = prev[prev.length - 1];
+                    if (last.role !== "assistant") return prev;
+                    return [
+                      ...prev.slice(0, -1),
+                      { ...last, agentPageTitle: event.agent },
+                    ];
                   });
                   break;
 
@@ -242,23 +243,25 @@ export default function Chat() {
 
                 case "text":
                   setMessages((prev) => {
-                    const updated = [...prev];
-                    const last = updated[updated.length - 1];
-                    if (last && last.role === "assistant") {
-                      last.content += event.text;
-                    }
-                    return updated;
+                    if (prev.length === 0) return prev;
+                    const last = prev[prev.length - 1];
+                    if (last.role !== "assistant") return prev;
+                    return [
+                      ...prev.slice(0, -1),
+                      { ...last, content: last.content + event.text },
+                    ];
                   });
                   break;
 
                 case "done":
                   setMessages((prev) => {
-                    const updated = [...prev];
-                    const last = updated[updated.length - 1];
-                    if (last && last.role === "assistant" && event.message_id) {
-                      last.id = event.message_id;
-                    }
-                    return updated;
+                    if (prev.length === 0 || !event.message_id) return prev;
+                    const last = prev[prev.length - 1];
+                    if (last.role !== "assistant") return prev;
+                    return [
+                      ...prev.slice(0, -1),
+                      { ...last, id: event.message_id },
+                    ];
                   });
                   // Hold the lit state briefly, then fade — matches /pulse choreography.
                   setTimeout(() => {
@@ -268,13 +271,16 @@ export default function Chat() {
 
                 case "error":
                   setMessages((prev) => {
-                    const updated = [...prev];
-                    const last = updated[updated.length - 1];
-                    if (last && last.role === "assistant") {
-                      last.content =
-                        event.error || "Something went wrong. Please try again.";
-                    }
-                    return updated;
+                    if (prev.length === 0) return prev;
+                    const last = prev[prev.length - 1];
+                    if (last.role !== "assistant") return prev;
+                    return [
+                      ...prev.slice(0, -1),
+                      {
+                        ...last,
+                        content: event.error || "Something went wrong. Please try again.",
+                      },
+                    ];
                   });
                   // Re-prompt for a key if the server says it's missing.
                   if (
