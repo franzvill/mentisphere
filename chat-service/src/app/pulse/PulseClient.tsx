@@ -4,6 +4,8 @@
 import { useEffect, useState } from 'react';
 import type { PulseLayout, ActivityEvent } from '@/lib/pulse/pulseTypes';
 import BrainCanvas from '@/components/pulse/BrainCanvas';
+import ChatDock from '@/components/pulse/ChatDock';
+import ResponseCard from '@/components/pulse/ResponseCard';
 
 interface Props { initialLayout: PulseLayout | null }
 
@@ -40,6 +42,14 @@ export default function PulseClient({ initialLayout }: Props) {
     }, 33);
     return () => clearInterval(id);
   }, [pending]);
+
+  const [responseText, setResponseText] = useState<string | null>(null);
+
+  // stub onSubmit for now — Task 25 will wire it up:
+  const handleSubmit = (q: string) => {
+    console.log('submit', q);
+    // actual fetch + SSE wiring lands in Task 25
+  };
 
   // Suppress until Task 25 flips it.
   void setPending;
@@ -85,6 +95,14 @@ export default function PulseClient({ initialLayout }: Props) {
   return (
     <div className="h-screen w-screen relative bg-black text-white overflow-hidden">
       <BrainCanvas layout={layout} activity={activity} activated={activated} travelingDotPhase={phase} />
+      <ChatDock onSubmit={handleSubmit} busy={pending} />
+      <ResponseCard
+        text={responseText}
+        activatedAgents={Array.from(activated.agents)}
+        activatedKnowledge={Array.from(activated.knowledge)}
+        onChipHover={() => { /* Task 25 will spotlight a node */ }}
+        onClose={() => setResponseText(null)}
+      />
     </div>
   );
 }
