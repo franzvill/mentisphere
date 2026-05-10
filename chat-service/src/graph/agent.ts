@@ -8,22 +8,24 @@ import { ChatGraphState } from './state';
 
 export async function agentNode(state: typeof ChatGraphState.State) {
   if (!state.selectedAgent) {
-    return { response: "I'm sorry, I couldn't find an appropriate agent to help with your question." };
+    return { response: "I'm sorry, I couldn't find an appropriate agent to help with your question.", knowledgePageTitles: [] };
   }
 
   // Load agent prompt from MediaWiki
   const page = await getPageContent(state.selectedAgent);
   if (!page) {
-    return { response: "The selected agent could not be loaded. Please try again." };
+    return { response: "The selected agent could not be loaded. Please try again.", knowledgePageTitles: [] };
   }
   const systemPrompt = extractSystemPrompt(page.wikitext);
 
   // RAG: retrieve relevant knowledge
   let knowledgeContext: string | null = null;
+  let knowledgePageTitles: string[] = [];
   try {
     const chunks = await retrieveRelevantChunks(state.userMessage, 5);
     if (chunks.length > 0) {
       knowledgeContext = chunks.map(c => `[${c.pageTitle}]\n${c.chunkText}`).join('\n\n---\n\n');
+      knowledgePageTitles = Array.from(new Set(chunks.map(c => c.pageTitle)));
     }
   } catch (e) {
     console.warn('[RAG] Retrieval failed:', e);
@@ -80,9 +82,9 @@ export async function agentNode(state: typeof ChatGraphState.State) {
           skillResponse += event.text;
         }
       }
-      return { response: skillResponse, systemPrompt, knowledgeContext, skillCatalog };
+      return { response: skillResponse, systemPrompt, knowledgeContext, skillCatalog, knowledgePageTitles };
     }
   }
 
-  return { response: firstResponse, systemPrompt, knowledgeContext, skillCatalog };
+  return { response: firstResponse, systemPrompt, knowledgeContext, skillCatalog, knowledgePageTitles };
 }

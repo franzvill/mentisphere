@@ -1,0 +1,171 @@
+// src/app/pulse/PulseClient.tsx
+'use client';
+
+import { useEffect, useState } from 'react';
+import type { PulseLayout, ActivityEvent } from '@/lib/pulse/pulseTypes';
+import BrainCanvas from '@/components/pulse/BrainCanvas';
+import ChatDock from '@/components/pulse/ChatDock';
+import ResponseCard from '@/components/pulse/ResponseCard';
+
+interface Props { initialLayout: PulseLayout | null }
+
+export default function PulseClient({ initialLayout }: Props) {
+  const [layout, setLayout] = useState(initialLayout);
+  const [activity, setActivity] = useState<ActivityEvent[]>([]);
+  const [supported, setSupported] = useState<boolean | null>(null);
+  const [activated, setActivated] = useState<{
+    agents: Set<string>;
+    knowledge: Set<string>;
+    selected: string | null;
+  }>({
+    agents: new Set(),
+    knowledge: new Set(),
+    selected: null,
+  });
+
+  // Traveling-dot phase: animates 0→1 looped at ~0.33Hz while a chat is pending.
+  const [pending, setPending] = useState(false);
+  const [phase, setPhase] = useState(0);
+
+  useEffect(() => {
+    if (!pending) {
+      setPhase(0);
+      return;
+    }
+    const start = Date.now();
+    const id = setInterval(() => {
+      const t = ((Date.now() - start) / 3000) % 1; // 3s loop
+      setPhase(t);
+    }, 33);
+    return () => clearInterval(id);
+  }, [pending]);
+
+  const [responseText, setResponseText] = useState<string | null>(null);
+
+  async function submitQuestion(q: string) {
+    setPending(true);
+    setResponseText(null);
+    setActivated({ agents: new Set(), knowledge: new Set(), selected: null });
+
+    let res: Response;
+    try {
+      res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: q, surface: 'pulse' }),
+      });
+    } catch {
+      setPending(false);
+      setResponseText('Network error — try again.');
+      return;
+    }
+
+    if (!res.ok || !res.body) {
+      // Auth failures, rate limits, schema rejections — all non-SSE responses
+      // surface here. Reset pending so the dock unlocks; show a brief error
+      // in the response card.
+      let msg = `Request failed (${res.status}).`;
+      if (res.status === 401) msg = 'Sign in to MediaWiki to chat with the brain.';
+      try {
+        const j = await res.json();
+        if (j?.error) msg = j.error;
+      } catch { /* not JSON, keep the default msg */ }
+      setPending(false);
+      setResponseText(msg);
+      return;
+    }
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buf = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += decoder.decode(value, { stream: true });
+      const events = buf.split('\n\n');
+      buf = events.pop() ?? '';
+
+      for (const ev of events) {
+        const line = ev.split('\n').find(l => l.startsWith('data: '));
+        if (!line) continue;
+        let payload: any;
+        try { payload = JSON.parse(line.slice(6)); } catch { continue; }
+
+        if (payload.type === 'thinking') {
+          // optional: dim the brain via state
+        } else if (payload.type === 'activated' && payload.kind === 'agent') {
+          setActivated(a => ({ ...a, agents: new Set([...a.agents, ...payload.pageTitles]) }));
+        } else if (payload.type === 'selected') {
+          setActivated(a => ({ ...a, selected: payload.pageTitle }));
+        } else if (payload.type === 'activated' && payload.kind === 'knowledge') {
+          setActivated(a => ({ ...a, knowledge: new Set([...a.knowledge, ...payload.pageTitles]) }));
+        } else if (payload.type === 'text') {
+          setResponseText(payload.text);
+        } else if (payload.type === 'error') {
+          setResponseText(payload.error || 'Something went wrong.');
+        } else if (payload.type === 'done') {
+          setPending(false);
+          // Hold lit state, then fade — managed by a timeout that clears `activated` after 6s.
+          setTimeout(() => setActivated({ agents: new Set(), knowledge: new Set(), selected: null }), 6000);
+        }
+      }
+    }
+
+    // Defensive: if the stream ended without a `done` event (unusual), still
+    // reset pending so the dock unlocks.
+    setPending(false);
+  }
+
+  // 30fps redraw tick — forces React to re-render so NodeLayer pulse rings animate.
+  // Safe for ~50–100 nodes; switch to useTick if node count grows past 1000.
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setTick(t => t + 1), 33);
+    return () => clearInterval(id);
+  }, []);
+
+  // WebGL feature detection — see Task 25.
+  useEffect(() => {
+    const c = document.createElement('canvas');
+    setSupported(!!(c.getContext('webgl2') || c.getContext('webgl')));
+  }, []);
+
+  useEffect(() => {
+    if (!supported) return;
+    const es = new EventSource('/api/pulse/stream');
+    es.onmessage = e => {
+      try { setActivity(prev => [...prev.slice(-99), JSON.parse(e.data)]); } catch {}
+    };
+    return () => es.close();
+  }, [supported]);
+
+  if (supported === false) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-black text-zinc-300">
+        <div className="text-center">
+          <p>Your browser doesn&apos;t support this view.</p>
+          <a className="underline mt-4 block" href="/chat">Try /chat instead →</a>
+        </div>
+      </div>
+    );
+  }
+
+  if (!layout) {
+    return <div className="h-screen flex items-center justify-center bg-black text-zinc-400">Loading neural graph…</div>;
+  }
+
+  return (
+    <div className="h-screen w-screen relative bg-black text-white overflow-hidden">
+      <BrainCanvas layout={layout} activity={activity} activated={activated} travelingDotPhase={phase} />
+      <ChatDock onSubmit={submitQuestion} busy={pending} />
+      <ResponseCard
+        text={responseText}
+        activatedAgents={Array.from(activated.agents)}
+        activatedKnowledge={Array.from(activated.knowledge)}
+        onChipHover={() => { /* Task 25 will spotlight a node */ }}
+        onClose={() => setResponseText(null)}
+      />
+    </div>
+  );
+}

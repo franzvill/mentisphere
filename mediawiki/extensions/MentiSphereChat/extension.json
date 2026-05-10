@@ -29,12 +29,20 @@
 		"MentiSphereChatServiceSecret": {
 			"value": "",
 			"description": "Shared secret for internal chat service API calls"
+		},
+		"MentiSphereBrainAssetsUrl": {
+			"value": "/widgets",
+			"description": "URL where brain widget JS/CSS are served (brain-widget IIFE bundle)"
 		}
 	},
 	"ResourceModules": {
 		"ext.mentisphere.chat": {
 			"scripts": ["modules/ext.mentisphere.chat/chat-loader.js"],
 			"styles": ["modules/ext.mentisphere.chat/chat-loader.css"]
+		},
+		"ext.mentisphere.brain": {
+			"scripts": ["modules/ext.mentisphere.brain/brain-loader.js"],
+			"styles": ["modules/ext.mentisphere.brain/brain-loader.css"]
 		}
 	},
 	"ResourceFileModulePaths": {

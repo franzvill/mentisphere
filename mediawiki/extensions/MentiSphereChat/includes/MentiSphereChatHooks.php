@@ -51,24 +51,37 @@ class MentiSphereChatHooks {
 	}
 
 	/**
-	 * Inject chat widget on Agent pages
+	 * Inject chat widget on Agent pages and brain widget on the Main Page.
 	 */
 	public static function onBeforePageDisplay( $out, $skin ) {
 		$title = $out->getTitle();
-		if ( $title->getNamespace() !== NS_AGENT ) {
-			return;
+		$config = $out->getConfig();
+
+		// Existing: chat widget on Agent pages
+		if ( $title->getNamespace() === NS_AGENT ) {
+			$chatServiceUrl = $config->get( 'MentiSphereChatServiceUrl' );
+			$chatAssetsUrl = $config->get( 'MentiSphereChatAssetsUrl' );
+
+			$out->addJsConfigVars( [
+				'wgMentiSphereChatServiceUrl' => $chatServiceUrl,
+				'wgMentiSphereAgentPage' => $title->getPrefixedText(),
+				'wgMentiSphereChatAssetsUrl' => $chatAssetsUrl,
+			] );
+
+			$out->addModules( 'ext.mentisphere.chat' );
 		}
 
-		$config = $out->getConfig();
-		$chatServiceUrl = $config->get( 'MentiSphereChatServiceUrl' );
-		$chatAssetsUrl = $config->get( 'MentiSphereChatAssetsUrl' );
+		// New: brain widget on the Main Page
+		if ( $title->isMainPage() ) {
+			$brainAssetsUrl = $config->get( 'MentiSphereBrainAssetsUrl' );
+			$chatServiceUrl = $config->get( 'MentiSphereChatServiceUrl' );
 
-		$out->addJsConfigVars( [
-			'wgMentiSphereChatServiceUrl' => $chatServiceUrl,
-			'wgMentiSphereAgentPage' => $title->getPrefixedText(),
-			'wgMentiSphereChatAssetsUrl' => $chatAssetsUrl,
-		] );
+			$out->addJsConfigVars( [
+				'wgMentiSphereBrainAssetsUrl' => $brainAssetsUrl,
+				'wgMentiSphereChatServiceUrl' => $chatServiceUrl,
+			] );
 
-		$out->addModules( 'ext.mentisphere.chat' );
+			$out->addModules( 'ext.mentisphere.brain' );
+		}
 	}
 }
