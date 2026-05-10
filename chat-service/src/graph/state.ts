@@ -16,4 +16,8 @@ export const ChatGraphState = Annotation.Root({
     reducer: (_, b) => b,
     default: () => [],
   }),
+  knowledgePageTitles: Annotation<string[]>({
+    reducer: (_, b) => b,
+    default: () => [],
+  }),
 });
