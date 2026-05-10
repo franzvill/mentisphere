@@ -8,6 +8,13 @@ export async function GET(_req: NextRequest) {
   const watcher = getActivityWatcher();
   const encoder = new TextEncoder();
 
+  // Cleanup is closed-over by both `start` (which assigns it) and `cancel`
+  // (which invokes it). Don't stash it on the controller — `this` inside the
+  // ReadableStream's `cancel` callback is the source object, not the controller,
+  // so a controller-attached property would be unreachable and subscribers
+  // would leak on every client disconnect.
+  let cleanup: (() => void) | null = null;
+
   const stream = new ReadableStream({
     start(controller) {
       // Replay buffer first so the page never looks dead.
@@ -19,7 +26,7 @@ export async function GET(_req: NextRequest) {
         try {
           controller.enqueue(encoder.encode(`data: ${JSON.stringify(ev)}\n\n`));
         } catch {
-          // Stream closed; clean up below.
+          // Stream closed; cleanup() handles teardown.
         }
       });
 
@@ -32,16 +39,15 @@ export async function GET(_req: NextRequest) {
         }
       }, 25_000);
 
-      // Close handler
-      (controller as any)._cleanup = () => {
+      cleanup = () => {
         unsub();
         clearInterval(heartbeat);
       };
     },
-    cancel(reason) {
+    cancel() {
       // Next.js calls cancel on client disconnect.
-      const cleanup = (this as any)._cleanup;
-      if (cleanup) cleanup();
+      cleanup?.();
+      cleanup = null;
     },
   });
 
