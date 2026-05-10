@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/db';
+import { db, sqlClient } from '@/db';
 import { conversations, chatMessages } from '@/db/schema';
 import { authenticateRequest } from '@/lib/auth';
 import { createChatGraph } from '@/graph';
@@ -7,6 +7,7 @@ import { NoKeyError } from '@/lib/llm/provider';
 import type { LLMProviderType } from '@/lib/llm/types';
 import { eq, asc, desc } from 'drizzle-orm';
 import { z } from 'zod';
+import type { ChatStreamEvent } from '@/lib/pulse/pulseTypes';
 
 const chatSchemaBase = z.object({
   message: z.string().min(1).max(10000),
@@ -34,108 +35,153 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
   }
 
-  // Get or create conversation
-  let conversationId = parsed.data.conversationId;
+  const isPulse = parsed.data.surface === 'pulse';
+
+  // History + conversation handling: only when persistent
+  let history: Array<{ role: string; content: string; agentPageTitle?: string | null }> = [];
+  let conversationId: string | undefined;
   let previousAgent: string | null = null;
 
-  if (conversationId) {
-    const conv = await db.query.conversations.findFirst({
-      where: eq(conversations.id, conversationId),
-    });
-    if (!conv || conv.mwUserId !== user.id) {
-      return NextResponse.json({ error: 'Conversation not found' }, { status: 404 });
+  if (!isPulse) {
+    conversationId = parsed.data.conversationId;
+
+    if (conversationId) {
+      const conv = await db.query.conversations.findFirst({
+        where: eq(conversations.id, conversationId),
+      });
+      if (!conv || conv.mwUserId !== user.id) {
+        return NextResponse.json({ error: 'Conversation not found' }, { status: 404 });
+      }
+      // Get last agent used in this conversation
+      const lastMsg = await db.query.chatMessages.findFirst({
+        where: eq(chatMessages.conversationId, conversationId),
+        orderBy: [desc(chatMessages.createdAt)],
+      });
+      previousAgent = lastMsg?.agentPageTitle || null;
+    } else {
+      // Create new conversation
+      const title = parsed.data.message.substring(0, 50) + (parsed.data.message.length > 50 ? '...' : '');
+      const [conv] = await db.insert(conversations).values({
+        mwUserId: user.id,
+        mwUsername: user.name,
+        title,
+      }).returning();
+      conversationId = conv.id;
     }
-    // Get last agent used in this conversation
-    const lastMsg = await db.query.chatMessages.findFirst({
+
+    history = conversationId ? await db.query.chatMessages.findMany({
       where: eq(chatMessages.conversationId, conversationId),
-      orderBy: [desc(chatMessages.createdAt)],
+      orderBy: [asc(chatMessages.createdAt)],
+    }) : [];
+
+    await db.insert(chatMessages).values({
+      conversationId,
+      role: 'user',
+      content: parsed.data.message,
     });
-    previousAgent = lastMsg?.agentPageTitle || null;
-  } else {
-    // Create new conversation
-    const title = parsed.data.message.substring(0, 50) + (parsed.data.message.length > 50 ? '...' : '');
-    const [conv] = await db.insert(conversations).values({
-      mwUserId: user.id,
-      mwUsername: user.name,
-      title,
-    }).returning();
-    conversationId = conv.id;
   }
-
-  // Load conversation history
-  const history = conversationId ? await db.query.chatMessages.findMany({
-    where: eq(chatMessages.conversationId, conversationId),
-    orderBy: [asc(chatMessages.createdAt)],
-  }) : [];
-
-  // Save user message
-  await db.insert(chatMessages).values({
-    conversationId,
-    role: 'user',
-    content: parsed.data.message,
-  });
 
   // Read BYOK headers
   const llmProvider = request.headers.get('x-llm-provider') as LLMProviderType | null;
   const llmKey = request.headers.get('x-llm-key');
   const llmModel = request.headers.get('x-llm-model');
 
-  // Run LangGraph
+  const initialState = {
+    userMessage: parsed.data.message,
+    conversationHistory: history.map(m => ({ role: m.role, content: m.content })),
+    selectedAgent: parsed.data.agent || previousAgent,
+    llmProvider: llmProvider || null,
+    llmKey: llmKey || null,
+    llmModel: llmModel || null,
+  };
+
   const graph = createChatGraph();
-  let result;
-  try {
-    result = await graph.invoke({
-      userMessage: parsed.data.message,
-      conversationHistory: history.map(m => ({ role: m.role, content: m.content })),
-      selectedAgent: parsed.data.agent || previousAgent,
-      llmProvider: llmProvider || null,
-      llmKey: llmKey || null,
-      llmModel: llmModel || null,
-    });
-  } catch (err) {
-    if (err instanceof NoKeyError) {
-      const encoder = new TextEncoder();
-      const errStream = new ReadableStream({
-        start(controller) {
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'error', error: 'Please configure your API key in LLM Settings (gear icon) before chatting.' })}\n\n`));
-          controller.close();
-        },
-      });
-      return new Response(errStream, {
-        headers: { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache' },
-      });
-    }
-    throw err;
-  }
-
-  // Save assistant message with agent attribution
-  const [saved] = await db.insert(chatMessages).values({
-    conversationId,
-    role: 'assistant',
-    content: result.response,
-    agentPageTitle: result.selectedAgent,
-  }).returning();
-
-  // Update conversation timestamp if first message
-  if (history.length === 0) {
-    await db.update(conversations)
-      .set({ updatedAt: new Date() })
-      .where(eq(conversations.id, conversationId));
-  }
-
-  // Stream response as SSE
   const encoder = new TextEncoder();
+  const send = (controller: ReadableStreamDefaultController, ev: ChatStreamEvent) => {
+    controller.enqueue(encoder.encode(`data: ${JSON.stringify(ev)}\n\n`));
+  };
+
   const stream = new ReadableStream({
-    start(controller) {
-      // Send agent selection event
-      controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'agent_selected', agent: result.selectedAgent })}\n\n`));
-      // Send conversation ID (for new conversations)
-      controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'conversation', conversationId })}\n\n`));
-      // Send full response as text
-      controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'text', text: result.response })}\n\n`));
-      // Send done
-      controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'done', message_id: saved.id })}\n\n`));
-      controller.close();
+    async start(controller) {
+      try {
+        send(controller, { type: 'thinking' });
+
+        let finalResponse = '';
+        let finalAgent: string | null = null;
+        const iter = (await graph.stream(initialState as any, { streamMode: 'updates' as any })) as unknown as AsyncIterable<Record<string, any>>;
+
+        for await (const update of iter) {
+          if (update.router) {
+            const r = update.router;
+            if (r.topAgentCandidates?.length) {
+              send(controller, {
+                type: 'activated',
+                kind: 'agent',
+                pageTitles: r.topAgentCandidates.map((c: any) => c.title),
+              });
+            }
+            if (r.selectedAgent) {
+              // `selected` is the new pulse vocabulary; `agent_selected` is the legacy event
+              // that the existing /chat client already listens for — keep both.
+              send(controller, { type: 'selected', pageTitle: r.selectedAgent });
+              send(controller, { type: 'agent_selected', agent: r.selectedAgent });
+              finalAgent = r.selectedAgent;
+            }
+          }
+          if (update.agent) {
+            const a = update.agent;
+            if (a.knowledgePageTitles?.length) {
+              send(controller, {
+                type: 'activated',
+                kind: 'knowledge',
+                pageTitles: a.knowledgePageTitles,
+              });
+            }
+            if (typeof a.response === 'string') {
+              finalResponse = a.response;
+              send(controller, { type: 'text', text: a.response });
+            }
+          }
+        }
+
+        // Persist + emit conversation event for the persistent path only.
+        let messageId: string | undefined;
+        if (!isPulse && conversationId) {
+          const [saved] = await db.insert(chatMessages).values({
+            conversationId,
+            role: 'assistant',
+            content: finalResponse,
+            agentPageTitle: finalAgent,
+          }).returning();
+          messageId = saved.id;
+          if (history.length === 0) {
+            await db.update(conversations)
+              .set({ updatedAt: new Date() })
+              .where(eq(conversations.id, conversationId));
+          }
+          send(controller, { type: 'conversation', conversationId });
+        }
+
+        // Emit pulse_activity NOTIFY for the ambient stream (both surfaces).
+        if (finalAgent) {
+          await sqlClient`SELECT pg_notify('pulse_activity', ${JSON.stringify({
+            type: 'chat',
+            agentPageTitle: finalAgent,
+            ts: Date.now(),
+          })}::text)`;
+        }
+
+        send(controller, { type: 'done', message_id: messageId });
+        controller.close();
+      } catch (err) {
+        if (err instanceof NoKeyError) {
+          send(controller, { type: 'error', error: 'Please configure your API key in LLM Settings (gear icon) before chatting.' });
+        } else {
+          console.error('[chat] stream error', err);
+          send(controller, { type: 'error', error: 'Internal error' });
+        }
+        controller.close();
+      }
     },
   });
 
