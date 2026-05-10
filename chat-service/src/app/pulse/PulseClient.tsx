@@ -24,6 +24,26 @@ export default function PulseClient({ initialLayout }: Props) {
   // Suppress unused-variable warning until Task 25 wires chat events.
   void setActivated;
 
+  // Traveling-dot phase: animates 0→1 looped at ~0.33Hz while a chat is pending.
+  const [pending, setPending] = useState(false);
+  const [phase, setPhase] = useState(0);
+
+  useEffect(() => {
+    if (!pending) {
+      setPhase(0);
+      return;
+    }
+    const start = Date.now();
+    const id = setInterval(() => {
+      const t = ((Date.now() - start) / 3000) % 1; // 3s loop
+      setPhase(t);
+    }, 33);
+    return () => clearInterval(id);
+  }, [pending]);
+
+  // Suppress until Task 25 flips it.
+  void setPending;
+
   // 30fps redraw tick — forces React to re-render so NodeLayer pulse rings animate.
   // Safe for ~50–100 nodes; switch to useTick if node count grows past 1000.
   const [, setTick] = useState(0);
@@ -64,7 +84,7 @@ export default function PulseClient({ initialLayout }: Props) {
 
   return (
     <div className="h-screen w-screen relative bg-black text-white overflow-hidden">
-      <BrainCanvas layout={layout} activity={activity} activated={activated} />
+      <BrainCanvas layout={layout} activity={activity} activated={activated} travelingDotPhase={phase} />
     </div>
   );
 }

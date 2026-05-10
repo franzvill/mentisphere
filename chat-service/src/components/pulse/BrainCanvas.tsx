@@ -15,9 +15,10 @@ interface Props {
   layout: PulseLayout;
   activity: ActivityEvent[];
   activated: { agents: Set<string>; knowledge: Set<string>; selected: string | null };
+  travelingDotPhase?: number;
 }
 
-export default function BrainCanvas({ layout, activity, activated }: Props) {
+export default function BrainCanvas({ layout, activity, activated, travelingDotPhase = 0 }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ w: 0, h: 0 });
   const [brainTex, setBrainTex] = useState<Texture | null>(null);
@@ -49,7 +50,7 @@ export default function BrainCanvas({ layout, activity, activated }: Props) {
                 alpha={0.9}
               />
             )}
-            <EdgeLayer layout={layout} size={size} activated={activated} />
+            <EdgeLayer layout={layout} size={size} activated={activated} travelingDotPhase={travelingDotPhase} />
             <NodeLayer layout={layout} size={size} activity={activity} activated={activated} />
           </pixiContainer>
         </Application>
