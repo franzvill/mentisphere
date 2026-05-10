@@ -740,9 +740,6 @@ import { buildLayout } from '@/lib/pulse/layoutBuilder';
 import { buildEdges } from '@/lib/pulse/edgeBuilder';
 import { BRAIN_MASK } from '@/lib/pulse/brainMask';
 import { readLayout, writeLayout } from '@/lib/pulse/layoutCache';
-import { db as drizzle } from '@/db';
-import { agentStats } from '@/db/schema';
-import { eq } from 'drizzle-orm';
 import type { PulseLayout, NodeKind } from '@/lib/pulse/pulseTypes';
 
 export const dynamic = 'force-dynamic';
@@ -775,7 +772,7 @@ export async function GET() {
   const parseVec = (s: string) => s.replace(/^\[|\]$/g, '').split(',').map(Number);
 
   // Pull stats so agent weight reflects helpful ratings.
-  const stats = await drizzle.query.agentStats.findMany();
+  const stats = await db.query.agentStats.findMany();
   const statsByTitle = new Map(stats.map(s => [s.agentPageTitle, s]));
 
   const inputs = [
@@ -1526,6 +1523,9 @@ const stream = new ReadableStream({
             });
           }
           if (r.selectedAgent) {
+            // Two events for the same fact: `selected` is the new vocabulary
+            // used by /pulse; `agent_selected` is the legacy event that the
+            // existing /chat client already listens for. Keep both.
             send(controller, { type: 'selected', pageTitle: r.selectedAgent });
             send(controller, { type: 'agent_selected', agent: r.selectedAgent });
             finalAgent = r.selectedAgent;
@@ -2581,10 +2581,11 @@ Manual end-to-end on a running stack:
 3 → 4 → 5 → 6 → 7 → 8
 3 → 9 → 10 → 11
 3 → 12 → 13
-13 → 14
-13 → 15 → 16 → 17
-8 + 17 → 18 → 19  (asset chain, blocks frontend)
+9 + 13 → 14            (Task 14 imports sqlClient from Task 9)
+13 → 15 → 16           (Task 16 also imports sqlClient — needs Task 9)
+9 + 16 → 17
+8 + 17 → 18 → 19       (asset chain, blocks frontend)
 17 → 20 → 21 → {22, 23} → 24 → 25 → 26
 ```
 
-Subagent-driven execution: 4-6, 7, 9-10, 12-13, 14 can run roughly in parallel after 3. Frontend (20-25) is sequential.
+Subagent-driven execution: 4-6, 7, 9-10, 12-13 can run roughly in parallel after 3. Tasks 14, 16 require Task 9 to land first (they import `sqlClient`). Frontend (20-25) is sequential.
