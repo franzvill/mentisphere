@@ -83,8 +83,6 @@ services:
   chat-service:
     build: ./chat-service
     restart: unless-stopped
-    volumes:
-      - ./chat-widget/dist:/app/public/assets
     depends_on:
       postgres:
         condition: service_healthy

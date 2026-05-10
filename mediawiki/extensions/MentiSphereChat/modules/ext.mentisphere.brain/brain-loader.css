@@ -29,3 +29,59 @@
 .ms-brain-widget-mount.ms-brain-hydrated::before {
 	display: none;
 }
+
+/* Homepage chat input — submits to /chat?q=<typed text>. */
+.ms-chat-input-wrapper {
+	margin: 24px auto 32px;
+	max-width: 720px;
+	width: 100%;
+}
+
+.ms-home-chat-form {
+	display: flex;
+	gap: 8px;
+	padding: 6px 6px 6px 18px;
+	background: #fff;
+	border: 1px solid #d8d9e8;
+	border-radius: 999px;
+	box-shadow: 0 4px 14px rgba( 26, 35, 126, 0.06 );
+	transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.ms-home-chat-form:focus-within {
+	border-color: #1a237e;
+	box-shadow: 0 4px 18px rgba( 26, 35, 126, 0.18 );
+}
+
+.ms-home-chat-input {
+	flex: 1;
+	min-width: 0;
+	border: 0;
+	outline: 0;
+	background: transparent;
+	font-size: 15px;
+	color: #1a237e;
+	font-family: inherit;
+	padding: 8px 0;
+}
+
+.ms-home-chat-input::placeholder {
+	color: #8a8db0;
+}
+
+.ms-home-chat-submit {
+	border: 0;
+	background: #1a237e;
+	color: #fff;
+	font-weight: 600;
+	font-size: 13px;
+	letter-spacing: 0.02em;
+	padding: 0 20px;
+	border-radius: 999px;
+	cursor: pointer;
+	transition: background 0.15s;
+}
+
+.ms-home-chat-submit:hover {
+	background: #283593;
+}
