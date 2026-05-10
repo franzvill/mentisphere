@@ -8,11 +8,19 @@ import type { LLMProviderType } from '@/lib/llm/types';
 import { eq, asc, desc } from 'drizzle-orm';
 import { z } from 'zod';
 
-const chatSchema = z.object({
-  conversationId: z.string().uuid().optional(),
+const chatSchemaBase = z.object({
   message: z.string().min(1).max(10000),
   agent: z.string().optional(),
 });
+const chatSchemaPersistent = chatSchemaBase.extend({
+  surface: z.literal('chat').optional(),
+  conversationId: z.string().uuid().optional(),
+});
+const chatSchemaPulse = chatSchemaBase.extend({
+  surface: z.literal('pulse'),
+  conversationId: z.undefined({ message: 'conversationId is not allowed when surface=pulse' }).optional(),
+});
+const chatSchema = z.union([chatSchemaPulse, chatSchemaPersistent]);
 
 export async function POST(request: NextRequest) {
   const user = await authenticateRequest(request);
