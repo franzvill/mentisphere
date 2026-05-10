@@ -54,9 +54,8 @@
 == Recent Activity ==
 
 {{#dpl:
-| namespace = Agent
-| namespace = Knowledge
-| namespace = Skill
+| namespace = Agent|Knowledge|Skill
+| titlematch = %
 | ordermethod = lastedit
 | order = descending
 | count = 10
