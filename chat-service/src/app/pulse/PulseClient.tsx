@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import type { PulseLayout, ActivityEvent } from '@/lib/pulse/pulseTypes';
+import BrainCanvas from '@/components/pulse/BrainCanvas';
 
 interface Props { initialLayout: PulseLayout | null }
 
@@ -10,6 +11,18 @@ export default function PulseClient({ initialLayout }: Props) {
   const [layout, setLayout] = useState(initialLayout);
   const [activity, setActivity] = useState<ActivityEvent[]>([]);
   const [supported, setSupported] = useState<boolean | null>(null);
+  const [activated, setActivated] = useState<{
+    agents: Set<string>;
+    knowledge: Set<string>;
+    selected: string | null;
+  }>({
+    agents: new Set(),
+    knowledge: new Set(),
+    selected: null,
+  });
+
+  // Suppress unused-variable warning until Task 25 wires chat events.
+  void setActivated;
 
   // WebGL feature detection — see Task 25.
   useEffect(() => {
@@ -43,10 +56,7 @@ export default function PulseClient({ initialLayout }: Props) {
 
   return (
     <div className="h-screen w-screen relative bg-black text-white overflow-hidden">
-      {/* BrainCanvas comes in Task 21 */}
-      <div className="absolute inset-0 flex items-center justify-center text-zinc-500">
-        Layout v{layout.version} — {layout.nodes.length} nodes, {layout.edges.length} edges
-      </div>
+      <BrainCanvas layout={layout} activity={activity} activated={activated} />
     </div>
   );
 }
