@@ -16,13 +16,6 @@
   inset: 0;
 }
 
-/* The brain.png asset has a baked-in black background (gpt-image-2 doesn't
- * output alpha). Apply screen blending to the rendered canvas so the page
- * background shows through black pixels — only the cyan/magenta glow paints. */
-.ms-brain-widget canvas {
-  mix-blend-mode: screen;
-}
-
 .ms-brain-widget__error {
   display: flex;
   align-items: center;

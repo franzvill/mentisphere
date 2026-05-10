@@ -4,8 +4,8 @@
 	var assetsUrl = mw.config.get( 'wgMentiSphereBrainAssetsUrl' );
 	if ( !assetsUrl ) return;
 
-	// Cache-bust version (update on each build)
-	var v = '20260510';
+	// Cache-bust version (auto-bumped by deploy.yml on prod; manually update for local).
+	var v = '20260510143000';
 
 	// Find or create the container div with the data attribute the widget mounts on.
 	// Position the brain just above the homepage chat input

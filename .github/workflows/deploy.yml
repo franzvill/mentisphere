@@ -78,10 +78,13 @@ jobs:
           set -e
           cd /opt/mentisphere
 
-          # Bump cache-bust version on chat-loader so the new widget asset is fetched
+          # Bump cache-bust version on both loaders so the freshly-built
+          # /chat-assets/* and /widgets/* bundles are refetched.
           STAMP=$(date +%Y%m%d%H%M%S)
           sed -i "s/var v = '[0-9]*';/var v = '${STAMP}';/" \
             mediawiki/extensions/MentiSphereChat/modules/ext.mentisphere.chat/chat-loader.js
+          sed -i "s/var v = '[0-9]*';/var v = '${STAMP}';/" \
+            mediawiki/extensions/MentiSphereChat/modules/ext.mentisphere.brain/brain-loader.js
 
           # Rebuild chat-service image (no-op if no Dockerfile/source changes)
           docker compose build chat-service

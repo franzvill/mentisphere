@@ -86,7 +86,6 @@ export default function BrainCanvas({ layout, activity, activated, travelingDotP
                 width={Math.min(size.w, size.h) * 0.9}
                 height={Math.min(size.w, size.h) * 0.9}
                 alpha={0.9}
-                blendMode="screen"
               />
             )}
             <EdgeLayer layout={layout} size={size} activated={activated} travelingDotPhase={travelingDotPhase} />
