@@ -16,6 +16,13 @@
   inset: 0;
 }
 
+/* Let mobile users scroll the page when their finger lands on the brain
+ * canvas. `pan-y` permits vertical pan gestures (so the page scrolls)
+ * while still delivering tap events to the canvas (so node clicks work). */
+.ms-brain-widget canvas {
+  touch-action: pan-y;
+}
+
 .ms-brain-widget__error {
   display: flex;
   align-items: center;
