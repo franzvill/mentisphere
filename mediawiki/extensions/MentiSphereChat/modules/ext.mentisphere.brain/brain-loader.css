@@ -1,0 +1,31 @@
+/* brain-loader.css
+ * Provides pre-hydration presence for the brain widget mount point.
+ * The mount div exists before JS runs — this keeps the layout stable
+ * and shows a loading indicator while the IIFE bundle downloads.
+ */
+
+.ms-brain-widget-mount {
+	position: relative;
+	width: 100%;
+	height: 440px;
+	background: #05070d;
+	border-radius: 12px;
+	overflow: hidden;
+	margin-bottom: 24px;
+	box-sizing: border-box;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: rgba( 255, 255, 255, 0.3 );
+	font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+	font-size: 13px;
+}
+
+.ms-brain-widget-mount::before {
+	content: 'Loading neural graph\2026';
+}
+
+/* Hide the ::before placeholder once the widget has hydrated */
+.ms-brain-widget-mount.ms-brain-hydrated::before {
+	display: none;
+}
