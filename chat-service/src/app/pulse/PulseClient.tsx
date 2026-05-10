@@ -23,9 +23,6 @@ export default function PulseClient({ initialLayout }: Props) {
     selected: null,
   });
 
-  // Suppress unused-variable warning until Task 25 wires chat events.
-  void setActivated;
-
   // Traveling-dot phase: animates 0→1 looped at ~0.33Hz while a chat is pending.
   const [pending, setPending] = useState(false);
   const [phase, setPhase] = useState(0);
@@ -45,14 +42,53 @@ export default function PulseClient({ initialLayout }: Props) {
 
   const [responseText, setResponseText] = useState<string | null>(null);
 
-  // stub onSubmit for now — Task 25 will wire it up:
-  const handleSubmit = (q: string) => {
-    console.log('submit', q);
-    // actual fetch + SSE wiring lands in Task 25
-  };
+  async function submitQuestion(q: string) {
+    setPending(true);
+    setResponseText(null);
+    setActivated({ agents: new Set(), knowledge: new Set(), selected: null });
 
-  // Suppress until Task 25 flips it.
-  void setPending;
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: q, surface: 'pulse' }),
+    });
+    if (!res.body) { setPending(false); return; }
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buf = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += decoder.decode(value, { stream: true });
+      const events = buf.split('\n\n');
+      buf = events.pop() ?? '';
+
+      for (const ev of events) {
+        const line = ev.split('\n').find(l => l.startsWith('data: '));
+        if (!line) continue;
+        let payload: any;
+        try { payload = JSON.parse(line.slice(6)); } catch { continue; }
+
+        if (payload.type === 'thinking') {
+          // optional: dim the brain via state
+        } else if (payload.type === 'activated' && payload.kind === 'agent') {
+          setActivated(a => ({ ...a, agents: new Set([...a.agents, ...payload.pageTitles]) }));
+        } else if (payload.type === 'selected') {
+          setActivated(a => ({ ...a, selected: payload.pageTitle }));
+        } else if (payload.type === 'activated' && payload.kind === 'knowledge') {
+          setActivated(a => ({ ...a, knowledge: new Set([...a.knowledge, ...payload.pageTitles]) }));
+        } else if (payload.type === 'text') {
+          setResponseText(payload.text);
+        } else if (payload.type === 'done') {
+          setPending(false);
+          // Hold lit state, then fade — managed by a timeout that clears `activated` after 6s.
+          setTimeout(() => setActivated({ agents: new Set(), knowledge: new Set(), selected: null }), 6000);
+        }
+      }
+    }
+  }
 
   // 30fps redraw tick — forces React to re-render so NodeLayer pulse rings animate.
   // Safe for ~50–100 nodes; switch to useTick if node count grows past 1000.
@@ -95,7 +131,7 @@ export default function PulseClient({ initialLayout }: Props) {
   return (
     <div className="h-screen w-screen relative bg-black text-white overflow-hidden">
       <BrainCanvas layout={layout} activity={activity} activated={activated} travelingDotPhase={phase} />
-      <ChatDock onSubmit={handleSubmit} busy={pending} />
+      <ChatDock onSubmit={submitQuestion} busy={pending} />
       <ResponseCard
         text={responseText}
         activatedAgents={Array.from(activated.agents)}
