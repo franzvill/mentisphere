@@ -89,12 +89,16 @@ jobs:
           # Bring up any new/updated containers; doesn't touch unchanged ones
           docker compose up -d
 
-          # Test + reload nginx; fall back to a hard restart if reload fails so
-          # routing-rule changes (new locations) actually take effect. Don't
-          # swallow errors — surface failures so they're visible in CI logs.
+          # Test the new config first, then force-recreate nginx so it
+          # picks up *all* changes (location blocks added/removed, upstreams,
+          # etc.). `nginx -s reload` against a bind-mount + the docker bind
+          # mount caching layer has been unreliable for new locations.
           docker exec mentisphere-nginx-1 nginx -t
-          docker exec mentisphere-nginx-1 nginx -s reload || \
-            docker compose restart nginx
+          docker compose up -d --force-recreate nginx
+          # Sanity: confirm a marker that should only exist post-deploy
+          # (the /widgets/ location) is in the live config.
+          docker exec mentisphere-nginx-1 grep -q "location /widgets/" /etc/nginx/nginx.conf
+          echo "nginx config confirmed up-to-date"
 
           # Restart MW so chat-loader cache-bust is rendered into pages
           docker compose restart mediawiki
