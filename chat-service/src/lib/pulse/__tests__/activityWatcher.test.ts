@@ -13,8 +13,11 @@ describe('ActivityWatcher', () => {
     for (let i = 0; i < 10; i++) {
       watcher.push({ type: 'edit', pageTitle: `P${i}`, rcid: i, ts: i });
     }
-    expect(watcher.snapshot().length).toBe(5);
-    expect(watcher.snapshot()[0].rcid).toBe(5);
+    const snap = watcher.snapshot();
+    expect(snap.length).toBe(5);
+    const first = snap[0];
+    if (first.type !== 'edit' && first.type !== 'spawn') throw new Error('expected edit/spawn');
+    expect(first.rcid).toBe(5);
   });
 
   it('dedupes edit events by rcid', () => {
