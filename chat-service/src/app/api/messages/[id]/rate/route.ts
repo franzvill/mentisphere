@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/db';
+import { db, sqlClient } from '@/db';
 import { chatMessages, chatSessions, agentStats } from '@/db/schema';
 import { authenticateRequest } from '@/lib/auth';
 import { eq, sql } from 'drizzle-orm';
@@ -68,6 +68,13 @@ export async function POST(
       })
       .where(eq(agentStats.agentPageTitle, session.agentPageTitle));
   }
+
+  await sqlClient`SELECT pg_notify('pulse_activity', ${JSON.stringify({
+    type: 'rating',
+    agentPageTitle: session.agentPageTitle,
+    rating: parsed.data.rating,
+    ts: Date.now(),
+  })}::text)`;
 
   return NextResponse.json({ success: true });
 }

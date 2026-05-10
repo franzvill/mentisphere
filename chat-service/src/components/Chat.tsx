@@ -8,6 +8,7 @@ import ChatInput from "./ChatInput";
 import EmptyState from "./EmptyState";
 import AgentSearch from "./AgentSearch";
 import LLMSettings, { getLLMConfig } from "./LLMSettings";
+import BrainPanel from "./pulse/BrainPanel";
 
 export default function Chat() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -35,6 +36,24 @@ export default function Chat() {
 
   // True when the wiki session is missing/expired — render sign-in prompt instead of chat UI.
   const [isUnauthed, setIsUnauthed] = useState(false);
+
+  // Brain visualization state — driven by the activation SSE events from /api/chat.
+  // The BrainPanel itself fetches the layout and ambient activity stream when open.
+  const [activated, setActivated] = useState<{
+    agents: Set<string>;
+    knowledge: Set<string>;
+    selected: string | null;
+  }>({ agents: new Set(), knowledge: new Set(), selected: null });
+
+  // Traveling-dot phase: animates 0→1 looped at ~0.33Hz while a chat is in flight,
+  // so active edges in the brain panel show "thought" moving through the graph.
+  const [phase, setPhase] = useState(0);
+  useEffect(() => {
+    if (!isStreaming) { setPhase(0); return; }
+    const start = Date.now();
+    const id = setInterval(() => setPhase(((Date.now() - start) / 3000) % 1), 33);
+    return () => clearInterval(id);
+  }, [isStreaming]);
 
   const searchParams = useSearchParams();
 
@@ -127,6 +146,8 @@ export default function Chat() {
 
       setMessages((prev) => [...prev, userMsg, assistantMsg]);
       setIsStreaming(true);
+      // Reset brain activation for the new question.
+      setActivated({ agents: new Set(), knowledge: new Set(), selected: null });
 
       try {
         const headers: Record<string, string> = {
@@ -179,15 +200,38 @@ export default function Chat() {
               const event = JSON.parse(jsonStr);
 
               switch (event.type) {
+                case "thinking":
+                  // Brain panel listens via the `activated` state; nothing else to do here.
+                  break;
+
+                case "activated":
+                  if (event.kind === "agent" && Array.isArray(event.pageTitles)) {
+                    setActivated((a) => ({
+                      ...a,
+                      agents: new Set([...a.agents, ...event.pageTitles]),
+                    }));
+                  } else if (event.kind === "knowledge" && Array.isArray(event.pageTitles)) {
+                    setActivated((a) => ({
+                      ...a,
+                      knowledge: new Set([...a.knowledge, ...event.pageTitles]),
+                    }));
+                  }
+                  break;
+
+                case "selected":
+                  setActivated((a) => ({ ...a, selected: event.pageTitle }));
+                  break;
+
                 case "agent_selected":
                   setSelectedAgent(event.agent);
                   setMessages((prev) => {
-                    const updated = [...prev];
-                    const last = updated[updated.length - 1];
-                    if (last && last.role === "assistant") {
-                      last.agentPageTitle = event.agent;
-                    }
-                    return updated;
+                    if (prev.length === 0) return prev;
+                    const last = prev[prev.length - 1];
+                    if (last.role !== "assistant") return prev;
+                    return [
+                      ...prev.slice(0, -1),
+                      { ...last, agentPageTitle: event.agent },
+                    ];
                   });
                   break;
 
@@ -199,35 +243,44 @@ export default function Chat() {
 
                 case "text":
                   setMessages((prev) => {
-                    const updated = [...prev];
-                    const last = updated[updated.length - 1];
-                    if (last && last.role === "assistant") {
-                      last.content += event.text;
-                    }
-                    return updated;
+                    if (prev.length === 0) return prev;
+                    const last = prev[prev.length - 1];
+                    if (last.role !== "assistant") return prev;
+                    return [
+                      ...prev.slice(0, -1),
+                      { ...last, content: last.content + event.text },
+                    ];
                   });
                   break;
 
                 case "done":
                   setMessages((prev) => {
-                    const updated = [...prev];
-                    const last = updated[updated.length - 1];
-                    if (last && last.role === "assistant" && event.message_id) {
-                      last.id = event.message_id;
-                    }
-                    return updated;
+                    if (prev.length === 0 || !event.message_id) return prev;
+                    const last = prev[prev.length - 1];
+                    if (last.role !== "assistant") return prev;
+                    return [
+                      ...prev.slice(0, -1),
+                      { ...last, id: event.message_id },
+                    ];
                   });
+                  // Hold the lit state briefly, then fade — matches /pulse choreography.
+                  setTimeout(() => {
+                    setActivated({ agents: new Set(), knowledge: new Set(), selected: null });
+                  }, 6000);
                   break;
 
                 case "error":
                   setMessages((prev) => {
-                    const updated = [...prev];
-                    const last = updated[updated.length - 1];
-                    if (last && last.role === "assistant") {
-                      last.content =
-                        event.error || "Something went wrong. Please try again.";
-                    }
-                    return updated;
+                    if (prev.length === 0) return prev;
+                    const last = prev[prev.length - 1];
+                    if (last.role !== "assistant") return prev;
+                    return [
+                      ...prev.slice(0, -1),
+                      {
+                        ...last,
+                        content: event.error || "Something went wrong. Please try again.",
+                      },
+                    ];
                   });
                   // Re-prompt for a key if the server says it's missing.
                   if (
@@ -358,6 +411,9 @@ export default function Chat() {
           onExternalValueConsumed={() => setPendingPrompt(undefined)}
         />
       </div>
+
+      {/* Right-side brain panel — see what the mind activates while it answers */}
+      <BrainPanel activated={activated} travelingDotPhase={phase} />
 
       {/* Agent search modal */}
       <AgentSearch
