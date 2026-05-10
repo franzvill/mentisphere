@@ -449,12 +449,16 @@ h1, h2, h3, h4, h5, h6,
 @media (max-width: 768px) {
     .ms-action-cards,
     .ms-steps {
-        flex-direction: column;
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
     }
 
     .ms-action-card,
     .ms-step {
-        width: 100%;
+        width: 100% !important;
+        max-width: 100% !important;
+        flex: none !important;
     }
 }
 
