@@ -47,12 +47,33 @@ export default function PulseClient({ initialLayout }: Props) {
     setResponseText(null);
     setActivated({ agents: new Set(), knowledge: new Set(), selected: null });
 
-    const res = await fetch('/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: q, surface: 'pulse' }),
-    });
-    if (!res.body) { setPending(false); return; }
+    let res: Response;
+    try {
+      res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: q, surface: 'pulse' }),
+      });
+    } catch {
+      setPending(false);
+      setResponseText('Network error — try again.');
+      return;
+    }
+
+    if (!res.ok || !res.body) {
+      // Auth failures, rate limits, schema rejections — all non-SSE responses
+      // surface here. Reset pending so the dock unlocks; show a brief error
+      // in the response card.
+      let msg = `Request failed (${res.status}).`;
+      if (res.status === 401) msg = 'Sign in to MediaWiki to chat with the brain.';
+      try {
+        const j = await res.json();
+        if (j?.error) msg = j.error;
+      } catch { /* not JSON, keep the default msg */ }
+      setPending(false);
+      setResponseText(msg);
+      return;
+    }
 
     const reader = res.body.getReader();
     const decoder = new TextDecoder();
@@ -81,6 +102,8 @@ export default function PulseClient({ initialLayout }: Props) {
           setActivated(a => ({ ...a, knowledge: new Set([...a.knowledge, ...payload.pageTitles]) }));
         } else if (payload.type === 'text') {
           setResponseText(payload.text);
+        } else if (payload.type === 'error') {
+          setResponseText(payload.error || 'Something went wrong.');
         } else if (payload.type === 'done') {
           setPending(false);
           // Hold lit state, then fade — managed by a timeout that clears `activated` after 6s.
@@ -88,6 +111,10 @@ export default function PulseClient({ initialLayout }: Props) {
         }
       }
     }
+
+    // Defensive: if the stream ended without a `done` event (unusual), still
+    // reset pending so the dock unlocks.
+    setPending(false);
   }
 
   // 30fps redraw tick — forces React to re-render so NodeLayer pulse rings animate.
