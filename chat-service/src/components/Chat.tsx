@@ -8,6 +8,7 @@ import ChatInput from "./ChatInput";
 import EmptyState from "./EmptyState";
 import AgentSearch from "./AgentSearch";
 import LLMSettings, { getLLMConfig } from "./LLMSettings";
+import BrainPanel from "./pulse/BrainPanel";
 
 export default function Chat() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -35,6 +36,24 @@ export default function Chat() {
 
   // True when the wiki session is missing/expired — render sign-in prompt instead of chat UI.
   const [isUnauthed, setIsUnauthed] = useState(false);
+
+  // Brain visualization state — driven by the activation SSE events from /api/chat.
+  // The BrainPanel itself fetches the layout and ambient activity stream when open.
+  const [activated, setActivated] = useState<{
+    agents: Set<string>;
+    knowledge: Set<string>;
+    selected: string | null;
+  }>({ agents: new Set(), knowledge: new Set(), selected: null });
+
+  // Traveling-dot phase: animates 0→1 looped at ~0.33Hz while a chat is in flight,
+  // so active edges in the brain panel show "thought" moving through the graph.
+  const [phase, setPhase] = useState(0);
+  useEffect(() => {
+    if (!isStreaming) { setPhase(0); return; }
+    const start = Date.now();
+    const id = setInterval(() => setPhase(((Date.now() - start) / 3000) % 1), 33);
+    return () => clearInterval(id);
+  }, [isStreaming]);
 
   const searchParams = useSearchParams();
 
@@ -127,6 +146,8 @@ export default function Chat() {
 
       setMessages((prev) => [...prev, userMsg, assistantMsg]);
       setIsStreaming(true);
+      // Reset brain activation for the new question.
+      setActivated({ agents: new Set(), knowledge: new Set(), selected: null });
 
       try {
         const headers: Record<string, string> = {
@@ -179,6 +200,28 @@ export default function Chat() {
               const event = JSON.parse(jsonStr);
 
               switch (event.type) {
+                case "thinking":
+                  // Brain panel listens via the `activated` state; nothing else to do here.
+                  break;
+
+                case "activated":
+                  if (event.kind === "agent" && Array.isArray(event.pageTitles)) {
+                    setActivated((a) => ({
+                      ...a,
+                      agents: new Set([...a.agents, ...event.pageTitles]),
+                    }));
+                  } else if (event.kind === "knowledge" && Array.isArray(event.pageTitles)) {
+                    setActivated((a) => ({
+                      ...a,
+                      knowledge: new Set([...a.knowledge, ...event.pageTitles]),
+                    }));
+                  }
+                  break;
+
+                case "selected":
+                  setActivated((a) => ({ ...a, selected: event.pageTitle }));
+                  break;
+
                 case "agent_selected":
                   setSelectedAgent(event.agent);
                   setMessages((prev) => {
@@ -217,6 +260,10 @@ export default function Chat() {
                     }
                     return updated;
                   });
+                  // Hold the lit state briefly, then fade — matches /pulse choreography.
+                  setTimeout(() => {
+                    setActivated({ agents: new Set(), knowledge: new Set(), selected: null });
+                  }, 6000);
                   break;
 
                 case "error":
@@ -358,6 +405,9 @@ export default function Chat() {
           onExternalValueConsumed={() => setPendingPrompt(undefined)}
         />
       </div>
+
+      {/* Right-side brain panel — see what the mind activates while it answers */}
+      <BrainPanel activated={activated} travelingDotPhase={phase} />
 
       {/* Agent search modal */}
       <AgentSearch
