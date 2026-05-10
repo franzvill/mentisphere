@@ -3,24 +3,52 @@
 .ms-brain-widget {
   position: relative;
   width: 100%;
-  height: 460px;
   background: transparent;
   border-radius: 0;
-  overflow: hidden;
   box-sizing: border-box;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .ms-brain-widget__canvas-wrap {
-  position: absolute;
-  inset: 0;
+  position: relative;
+  width: 100%;
+  height: 460px;
 }
 
+.ms-brain-widget__caption {
+  margin: 0 auto;
+  padding: 6px 16px 0;
+  max-width: 640px;
+  text-align: center;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #4d5260;
+}
+
+.ms-brain-widget__caption strong {
+  color: #1a237e;
+  font-weight: 600;
+}
+
+.ms-brain-widget__dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  vertical-align: -1px;
+  margin: 0 1px;
+}
+
+.ms-brain-widget__dot--agent { background: #ff7a59; box-shadow: 0 0 4px rgba(255,122,89,0.6); }
+.ms-brain-widget__dot--knowledge { background: #5ec1ff; box-shadow: 0 0 4px rgba(94,193,255,0.6); }
+.ms-brain-widget__dot--skill { background: #9b8cff; box-shadow: 0 0 4px rgba(155,140,255,0.6); }
+
 /* Let mobile users scroll the page when their finger lands on the brain
- * canvas. `pan-y` permits vertical pan gestures (so the page scrolls)
- * while still delivering tap events to the canvas (so node clicks work). */
+ * canvas. Pixi sets `touch-action: none` inline on its canvas to capture
+ * gestures; we override with `!important` so vertical pan gestures pass
+ * through to the page (taps still reach the canvas for node clicks). */
 .ms-brain-widget canvas {
-  touch-action: pan-y;
+  touch-action: pan-y !important;
 }
 
 .ms-brain-widget__error {

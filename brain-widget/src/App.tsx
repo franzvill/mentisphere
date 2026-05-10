@@ -83,6 +83,9 @@ export function App() {
     );
   }
 
+  const agentCount = layout.nodes.filter(n => n.kind === 'agent').length;
+  const knowledgeCount = layout.nodes.filter(n => n.kind === 'knowledge').length;
+
   return (
     <div className="ms-brain-widget">
       <div className="ms-brain-widget__canvas-wrap">
@@ -93,6 +96,15 @@ export function App() {
           travelingDotPhase={0}
         />
       </div>
+      <p className="ms-brain-widget__caption">
+        The collective mind. Each dot is an{' '}
+        <span className="ms-brain-widget__dot ms-brain-widget__dot--agent" />{' '}agent,{' '}
+        <span className="ms-brain-widget__dot ms-brain-widget__dot--knowledge" />{' '}knowledge page,
+        or{' '}<span className="ms-brain-widget__dot ms-brain-widget__dot--skill" />{' '}skill,
+        positioned by topic and lit up as people contribute.
+        {' '}<strong>{agentCount}</strong> agents and{' '}
+        <strong>{knowledgeCount}</strong> knowledge pages, growing as the wiki grows.
+      </p>
     </div>
   );
 }
