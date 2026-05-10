@@ -159,6 +159,8 @@ The route holds an in-memory cache keyed by version; on cache miss it recomputes
 | Chat message arrives | activityWatcher subscribes to Postgres `LISTEN pulse_activity` channel | `/api/chat/route.ts`, after the `chatMessages` insert (assistant row) | Pulse on the agent that responded |
 | Helpful rating | Same `LISTEN pulse_activity` channel | `/api/messages/[id]/rate/route.ts`, after the rating update | Brief brighter glow on the agent |
 
+⚠ The rate endpoint as written today only accepts ratings on session-based messages (per-Agent embedded-widget chats) — it returns 404 if the message has no `sessionId`. So in v1, the "helpful rating" pulse signal fires for widget ratings only, not for unified-`/chat` ratings. If we later add rating-the-brain on `/pulse`, that's an extension to the rate route's accepted message types — explicitly out of scope here.
+
 We use a single shared channel (`pulse_activity`) and discriminate by event type in the JSON payload, so we don't multiply channels per signal.
 
 `activityWatcher` keeps a ring buffer of the last 100 events and broadcasts each new event via SSE. New `/pulse` clients receive the buffer on connect (so the page never looks dead) and live events thereafter.
@@ -197,7 +199,13 @@ USER types question  →  POST /api/chat  (with surface: 'pulse')
        └──────────────────────────────────────────────────────────┘
 ```
 
-**How activation events are emitted from the route handler:** the graph today is invoked via `await graph.invoke(...)` which returns the final state. To emit events at intermediate steps, the route switches to LangGraph's streaming API (`graph.streamEvents` or node-level callbacks) and translates per-node-completion events into SSE writes. This is a route-handler change only; the graph nodes themselves don't need to be SSE-aware.
+**How activation events are emitted from the route handler:** the graph today is invoked via `await graph.invoke(...)` which returns the final state. The route switches to `graph.stream({ streamMode: 'updates' })`, which yields one event per node completion containing that node's state delta. The route handler:
+
+1. After the `routerNode` update, reads `topAgentCandidates` → emits `activated · agent`; reads `selectedAgent` → emits `selected`.
+2. After the `agentNode` update, reads `knowledgePageTitles` → emits `activated · knowledge`; reads `response` → emits `text`.
+3. Emits `done` when the iterator completes.
+
+Graph nodes themselves stay SSE-unaware — the streaming concern lives entirely in the route handler.
 
 **SSE event contract (added to `pulseTypes.ts`):**
 
